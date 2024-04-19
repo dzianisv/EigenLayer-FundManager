@@ -103,7 +103,7 @@ contract Vault is ERC4626 {
         https://github.com/Layr-Labs/eigenlayer-contracts/blob/dev/src/test/integration/users/User.t.sol#L392
         https://github.com/Layr-Labs/eigenlayer-contracts/blob/dev/src/test/integration/users/User.t.sol#L91
     */
-    function _depositAndDelegateToEigenLayerOperator(address operatorAddress, bytes memory approverSignature) private {
+    function _depositAndDelegateToEigenLayerOperator(address operatorAddress, bytes memory approverSignature, bytes32 approverSalt) private {
         DelegationManager delegationManager = eigenLayerContracts.delegationManager();
         // Create empty data
         ISignatureUtils.SignatureWithExpiry memory approverSignatureAndExpiry;
@@ -118,9 +118,10 @@ contract Vault is ERC4626 {
             // Use empty signature
             approverSignatureAndExpiry = ISignatureUtils.SignatureWithExpiry({expiry: expiry, signature: ""});
         }
+        // Use provided salt if it's not zero, otherwise use zero salt
+        bytes32 salt = approverSalt != bytes32(0) ? approverSalt : bytes32(0);
         // Delegate to the operator
-        bytes32 zeroSalt = bytes32(0);
-        delegationManager.delegateTo(operatorAddress, approverSignatureAndExpiry, zeroSalt);
+        delegationManager.delegateTo(operatorAddress, approverSignatureAndExpiry, salt);
     }
 
 
