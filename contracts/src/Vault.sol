@@ -106,7 +106,7 @@ contract Vault is ERC4626 {
     function _depositAndDelegateToEigenLayerOperator(address operatorAddress, bytes memory approverSignature) private {
         DelegationManager delegationManager = eigenLayerContracts.delegationManager();
         // Create empty data
-        ISignatureUtils.SignatureWithExpiry memory emptySig;
+        ISignatureUtils.SignatureWithExpiry memory approverSignatureAndExpiry;
         uint256 expiry = type(uint256).max;
 
         // Get signature
@@ -119,7 +119,8 @@ contract Vault is ERC4626 {
             approverSignatureAndExpiry = ISignatureUtils.SignatureWithExpiry({expiry: expiry, signature: ""});
         }
         // Delegate to the operator
-        delegationManager.delegateTo(operatorAddress, emptySig, zeroSalt);
+        bytes32 zeroSalt = bytes32(0);
+        delegationManager.delegateTo(operatorAddress, approverSignatureAndExpiry, zeroSalt);
     }
 
 
