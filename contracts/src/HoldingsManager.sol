@@ -18,6 +18,7 @@ interface IEigenLayerOperator {
 }
 
 contract HoldingsManager {
+    // TODO: replace address by the Operator smart contract (or what ever smart contract that reprensents the Operator)
     // Mapping of operators to their stake in basis points
     mapping(address => uint256) public operatorStakes;
 
