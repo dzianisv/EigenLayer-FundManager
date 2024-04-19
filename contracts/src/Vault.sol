@@ -130,7 +130,10 @@ contract Vault is ERC4626 {
         Interacts with EigenLayer DelegationManager
         Check out 
     */
-    function _undelegateFromEigenLayerOperator() private  {
+    function _undelegateFromEigenLayerOperator() private {
+        DelegationManager delegationManager = eigenLayerContracts.delegationManager();
 
+        // Call the undelegate function
+        delegationManager.undelegate(address(this));
     }
 }
