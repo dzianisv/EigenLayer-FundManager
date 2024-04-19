@@ -12,7 +12,7 @@ contract TestCoinTest is Test {
     }
 
     function test_allowance() public {
-        TestCoin coin = new TestCoin();
+        TestCoin coin = new TestCoin("TestCoin", "TCN");
         uint amount = 1000;
 
         console2.log(coin.symbol());
