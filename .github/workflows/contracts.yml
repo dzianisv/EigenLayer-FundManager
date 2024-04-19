@@ -21,4 +21,4 @@ jobs:
         uses: foundry-rs/foundry-toolchain@v1
 
       - name: Run tests
-        run: forge test -vvv
+        run: cd contracts; forge test -vvv
