@@ -94,8 +94,28 @@ contract Vault is ERC4626 {
         https://github.com/Layr-Labs/eigenlayer-contracts/blob/dev/src/test/integration/users/User.t.sol#L392
         https://github.com/Layr-Labs/eigenlayer-contracts/blob/dev/src/test/integration/users/User.t.sol#L91
     */
-    function _depositAndDelegateToEigenLayerOperator() private {
+    function _depositAndDelegateToEigenLayerOperator(address operatorAddress) private {
+        // Get the instance of the DelegationManager contract
+        DelegationManager delegationManager = DelegationManager();
 
+        // Create empty data
+        ISignatureUtils.SignatureWithExpiry memory emptySig;
+        uint256 expiry = type(uint256).max;
+
+        // Get signature
+        ISignatureUtils.SignatureWithExpiry memory stakerSignatureAndExpiry;
+        stakerSignatureAndExpiry.expiry = expiry;
+        bytes32 digestHash = delegationManager.calculateCurrentStakerDelegationDigestHash(address(this), operatorAddress, expiry);
+        stakerSignatureAndExpiry.signature = bytes(abi.encodePacked(digestHash)); // dummy sig data
+
+        // Mark hash as signed
+        signedHashes[digestHash] = true;
+
+        // Delegate
+        delegationManager.delegateToBySignature(address(this), address(operator), stakerSignatureAndExpiry, emptySig, bytes32(0));
+
+        // Mark hash as used
+        signedHashes[digestHash] = false;
     }
 
     /*
