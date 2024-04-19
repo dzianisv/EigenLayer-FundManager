@@ -30,6 +30,8 @@ contract VaultScript is Script {
 
         IEgeneLayerConstracts elContracts = new TestnetContracts();
         HoldingsManager holdingsManager = new HoldingsManager(address(msg.sender));
+        // Coinbase Operator: https://holesky.etherscan.io/address/0xbe4b4fa92b6767fda2c8d1db53a286834db19638
+        holdingsManager.setOperator(address(0xbE4B4Fa92b6767FDa2C8D1db53A286834dB19638), 100000);
         Vault vault = new Vault(liquidStakedToken, elContracts, holdingsManager);
 
         vm.stopBroadcast();
