@@ -1,9 +1,9 @@
 #!/bin/bash
 
-for file in find src/contracts/src -type f; do
+for file in $(find contracts/src -type f); do
     echo "$file"
-    echo "```"
+    echo '```'
     cat "$file"
-    echo "```"
+    echo '```'
     echo
-dones
+done
