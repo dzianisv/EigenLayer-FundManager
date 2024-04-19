@@ -24,9 +24,8 @@ contract Vault is ERC4626 {
         ERC4626(_underlyingAsset)
         ERC20(
             string(abi.encodePacked("Vault for ", _underlyingAsset.name())),
-            string(abi.encodePacked("a", _underlyingAsset.symbol()))
+            string(abi.encodePacked("cb", _underlyingAsset.symbol()))
         )
-       
     {
         eigenLayerContracts = _eigenLayerContracts;
         holdingsManager = _holdingsManager;
@@ -47,7 +46,9 @@ contract Vault is ERC4626 {
         address receiver,
         address owner
     ) public override returns (uint256) {
-        return super.withdraw(assets, receiver, owner);
+        uint256 r = super.withdraw(assets, receiver, owner);
+        _unstake(r);
+        return r;
     }
 
     function redeem(
@@ -55,7 +56,10 @@ contract Vault is ERC4626 {
         address receiver,
         address owner
     ) public override returns (uint256) {
-        return super.redeem(shares, receiver, owner);
+        uint256 r = super.redeem(shares, receiver, owner);
+        // TODO: what does redeem returns?
+        _unstake(r);
+        return r;
     }
 
     function deposit(
@@ -90,7 +94,7 @@ contract Vault is ERC4626 {
         2. Check out current investment positions (add vault holdings map)
         3. withdraw available funds from the available Operators to keep "stake_bps" relevant
     */
-    function _unstake() private {
+    function _unstake(uint256 withdrawn) private {
 
     }
 
@@ -99,9 +103,9 @@ contract Vault is ERC4626 {
         https://github.com/Layr-Labs/eigenlayer-contracts/blob/dev/src/test/integration/users/User.t.sol#L392
         https://github.com/Layr-Labs/eigenlayer-contracts/blob/dev/src/test/integration/users/User.t.sol#L91
     */
-    function _depositAndDelegateToEigenLayerOperator(address operatorAddress) private {
+    function _depositAndDelegateToEigenLayerOperator(address operatorAddress, uint256 amount) private {
         // Get the instance of the DelegationManager contract
-        DelegationManager delegationManager = DelegationManager();
+        DelegationManager delegationManager = eigenLayerContracts.delegationManager();
 
         // Create empty data
         ISignatureUtils.SignatureWithExpiry memory emptySig;
@@ -114,13 +118,13 @@ contract Vault is ERC4626 {
         stakerSignatureAndExpiry.signature = bytes(abi.encodePacked(digestHash)); // dummy sig data
 
         // Mark hash as signed
-        signedHashes[digestHash] = true;
+        // signedHashes[digestHash] = true;
 
         // Delegate
-        delegationManager.delegateToBySignature(address(this), address(operator), stakerSignatureAndExpiry, emptySig, bytes32(0));
+        delegationManager.delegateToBySignature(address(this), operatorAddress, stakerSignatureAndExpiry, emptySig, bytes32(0));
 
         // Mark hash as used
-        signedHashes[digestHash] = false;
+        // signedHashes[digestHash] = false;
     }
 
     /*
