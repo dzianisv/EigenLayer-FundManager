@@ -14,7 +14,7 @@ contract VaultScript is Script {
         vm.startBroadcast(privateKey);
 
         IERC20Metadata liquidStakedToken = IERC20Metadata(address(0x0));
-        Vault _vault = new Vault(liquidStakedToken);
+        // Vault _vault = new Vault(liquidStakedToken);
         vm.stopBroadcast();
     }
 }

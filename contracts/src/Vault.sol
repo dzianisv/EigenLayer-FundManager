@@ -10,7 +10,7 @@ import "eigenlayer-contracts/src/contracts/core/DelegationManager.sol";
 import "eigenlayer-contracts/src/contracts/core/StrategyManager.sol";
 
 // Testnet deployments https://github.com/Layr-Labs/eigenlayer-contracts?tab=readme-ov-file#current-testnet-deployment
-interface IUserDeployer {
+interface IEgeneLayerConstracts {
     function delegationManager() external view returns (DelegationManager);
     function strategyManager() external view returns (StrategyManager);
 }
@@ -18,15 +18,18 @@ interface IUserDeployer {
 contract Vault is ERC4626 {
     // Assuming HoldingsManager is defined elsewhere in your project
     HoldingsManager holdingsManager;
+    IEgeneLayerConstracts eigenLayerContracts;
 
-    constructor(IERC20Metadata _underlyingAsset)
+    constructor(IERC20Metadata _underlyingAsset, IEgeneLayerConstracts _eigenLayerContracts, HoldingsManager _holdingsManager)
         ERC4626(_underlyingAsset)
         ERC20(
             string(abi.encodePacked("Vault for ", _underlyingAsset.name())),
             string(abi.encodePacked("a", _underlyingAsset.symbol()))
         )
+       
     {
-        // Additional constructor logic if necessary
+        eigenLayerContracts = _eigenLayerContracts;
+        holdingsManager = _holdingsManager;
     }
 
     function totalAssets()
@@ -59,7 +62,9 @@ contract Vault is ERC4626 {
         uint256 assets,
         address receiver
     ) public override returns (uint256) {
-        return super.deposit(assets, receiver);
+        uint256 deposited =  super.deposit(assets, receiver);
+        _stake(deposited);
+        return deposited;
     }
 
     function mint(
@@ -75,7 +80,7 @@ contract Vault is ERC4626 {
         2. Check out current investment positions (add vault holdings map)
         3. redistribute available funds over available Operators to keep "stake_bps" relevant
     */
-    function _stake() private {
+    function _stake(uint256 deposited) private {
 
     }
 
