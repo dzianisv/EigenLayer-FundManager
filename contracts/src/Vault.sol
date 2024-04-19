@@ -110,13 +110,16 @@ contract Vault is ERC4626 {
         uint256 expiry = type(uint256).max;
 
         // Get signature
-        ISignatureUtils.SignatureWithExpiry memory approverSignatureAndExpiry;
-        approverSignatureAndExpiry.expiry = expiry;
-        approverSignatureAndExpiry.signature = approverSignature; // use the provided signature
-
-        // Delegate
-        delegationManager.delegateTo(operatorAddress, approverSignatureAndExpiry, bytes32(0));
-
+        if (approverSignature.length > 0) {
+            // Get signature
+            approverSignatureAndExpiry.expiry = expiry;
+            approverSignatureAndExpiry.signature = approverSignature; // use the provided signature
+        } else {
+            // Use empty signature
+            approverSignatureAndExpiry = ISignatureUtils.SignatureWithExpiry({expiry: expiry, signature: ""});
+        }
+        // Delegate to the operator
+        delegationManager.delegateTo(operatorAddress, emptySig, zeroSalt);
     }
 
 
