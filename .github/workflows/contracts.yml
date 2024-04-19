@@ -1,21 +1,30 @@
-on: [push]
-
 name: test
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
   check:
     name: Foundry project
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
         with:
           submodules: recursive
+
+      - name: Additional Submodule Updates
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --recursive
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
 
       - name: Run tests
         run: forge test -vvv
-
-      - name: Run snapshot
-        run: forge snapshot
