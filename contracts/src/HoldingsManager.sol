@@ -1,15 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
+
 /*
  Hodlings Manager contains the map of EigenLayer operators
  1. Import EigenLayer operator contract interface
  2. Create a map of the Operator-> uind265 stake_bps
- 3. Create an array of `address[] managers;` to store `managers` of the Fund
- 4. Implment addManager, deleteManager. Any manager can remove or add a new manager. Manager shouldn't be able to delete itself.
+ 3. Use OpenZeppelin role access control for Manager role grant and revoke
  6. Implement `setOperator(Operator operator, uint265 stake_bps)`, this funciton could be called just by manager
  7. Implement the getter that returns the array of the structs {Operator, stake_bps}
- 8. The user who is deploying this smart contract has to pass the address of the first `manager`.
+ 8. The user who is deploying this smart contract has to pass the address for the Admin (who is also the initial Manager).
 */
 
 interface IEigenLayerOperator {
@@ -17,76 +19,59 @@ interface IEigenLayerOperator {
     function getDetails() external view returns (string memory);
 }
 
-contract HoldingsManager {
+contract HoldingsManager is AccessControlEnumerable {
+    bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
+
     // Mapping of operators to their stake in basis points
-    mapping(address => uint256) public operatorStakes;
+    using EnumerableMap for EnumerableMap.AddressToUintMap;
+    EnumerableMap.AddressToUintMap private _operatorStakes;  
 
-    // Array to store managers
-    address[] public managers;
-
-    // Modifier to restrict function access to managers only
-    modifier onlyManager() {
-        require(isManager(msg.sender), "Caller is not a manager");
-        _;
+    constructor(address admin) {
+        // The deploying user sets the admin and initial manager
+        require(admin != address(0), "Admin address cannot be zero");
+        _grantRole(DEFAULT_ADMIN_ROLE, admin);
+        _grantRole(MANAGER_ROLE, admin);
     }
 
-    constructor(address initialManager) {
-        // The deploying user sets the initial manager
-        require(initialManager != address(0), "Manager address cannot be zero");
-        managers.push(initialManager);
-    }
-
-    // Check if an address is a manager
-    function isManager(address user) public view returns (bool) {
-        for (uint i = 0; i < managers.length; i++) {
-            if (managers[i] == user) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // Add a new manager
-    function addManager(address newManager) public onlyManager {
-        require(newManager != address(0), "Invalid manager address");
-        require(!isManager(newManager), "Address is already a manager");
-        managers.push(newManager);
-    }
-
-    // Remove an existing manager
-    function deleteManager(address manager) public onlyManager {
-        require(manager != msg.sender, "Managers cannot remove themselves");
-        require(isManager(manager), "Address is not a manager");
-
-        for (uint i = 0; i < managers.length; i++) {
-            if (managers[i] == manager) {
-                managers[i] = managers[managers.length - 1];
-                managers.pop();
-                break;
-            }
-        }
-    }
+    // caller must have DEFAULT_ADMIN_ROLE
+    // Add a manager -> grantRole(MANAGER_ROLE, address)
+    // Remove a manager -> revokeRole(MANAGER_RILE, address)
 
     // Set or update an operator's stake
-    function setOperator(address operator, uint256 stake_bps) public onlyManager {
+    function setOperator(address operator, uint256 stake_bps) public onlyRole(MANAGER_ROLE) {
         require(operator != address(0), "Invalid operator address");
-        operatorStakes[operator] = stake_bps;
+        _operatorStakes.set(operator, stake_bps);
+    }
+
+    function removeOperator(address operator) public onlyRole(MANAGER_ROLE){
+        require(operator != address(0), "Invalid operator address");
+        _operatorStakes.remove(operator);
+    }
+
+    function getOperatorStake(address operator) public view returns (uint256) {
+        return _operatorStakes.get(operator);
+    }
+
+    function existsOperator(address operator) public view returns (bool) {
+        return _operatorStakes.contains(operator);
+    }
+
+    function numberOfOperators() public view returns (uint256) {
+        return _operatorStakes.length();
     }
 
     // Get all operators and their stakes
-    function getAllOperators() public view returns (address[] memory, uint256[] memory) {
-        uint256 count = 0;
-        address[] memory ops = new address[](managers.length);
-        uint256[] memory stakes = new uint256[](managers.length);
+    function getAllOperatorStakes() public view returns (address[] memory, uint256[] memory) {
+        uint256 length = _operatorStakes.length();
+        address[] memory operators = new address[](length);
+        uint256[] memory stakes = new uint256[](length);
         
-        for (uint i = 0; i < managers.length; i++) {
-            if (operatorStakes[managers[i]] > 0) {
-                ops[count] = managers[i];
-                stakes[count] = operatorStakes[managers[i]];
-                count++;
-            }
+        for (uint i = 0; i < length; i++) {
+            (address operator, uint256 stake) = _operatorStakes.at(i);
+            operators[i] = operator;
+            stakes[i] = stake;
         }
 
-        return (ops, stakes);
+        return (operators, stakes);
     }
 }
