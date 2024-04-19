@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>EigenLayer Fund Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <script src="https://cdn.ethers.io/lib/ethers-5.0.umd.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="app.js"></script>
+</head>
+
+<body>
+    <nav>
+        <div class="nav-wrapper">
+            <span class="brand-logo">EigenLayer Fund Manager</span>
+            <ul id="nav-mobile" class="right">
+                <li><a id="networkInfo"><span class="material-icons">signal_cellular_alt</span><span id="networkDetails"></span></a></li>
+                <li><a id="walletInfo"><span class="material-icons">wallet</span><span id="walletAddress"></span></a></li>
+                <li><a href="#" id="connectWalletBtn"><i class="material-icons">wallet</i></a></li>
+                <li><a href="#" id="disconnectWalletBtn"><i class="material-icons">logout</i></a></li>
+            </ul>
+        </div>
+    </nav>
+    <script>
+        const connectWalletButton = $('#connectWalletBtn');
+        const disconnectWalletButton = $('#disconnectWalletBtn');
+
+        connectWalletButton.on('click', connectWallet);
+        disconnectWalletButton.on('click', disconnectWallet);
+
+        function updateWallet(walletAddress, networkChainId, networkName, contractAddress) {
+            if (walletAddress) {
+                connectWalletButton.hide();
+                disconnectWalletButton.show();
+                $("#walletInfo").show();
+                $("#walletAddress").text(walletAddress);
+
+                $("#networkInfo").attr('href', contractAddress);
+                $("#networkDetails").text(`${networkChainId}/${networkName}`);
+            } else {
+                $("#walletInfo").hide();
+                $("#networkInfo").text('disconnected');
+                connectWalletButton.show();
+                disconnectWalletButton.hide();
+            }
+        }
+    </script>
+
+    <!-- https://fonts.google.com/icons?selected=Material+Symbols+Outlined:query_stats:FILL@0;wght@400;GRAD@0;opsz@24&icon.query=chart -->
+
+    <div class="row">
+        <div class="col s6 m3">
+            <div class="card">
+                <div class="card-content">
+                    <span class="card-title"><i class="material-icons">account_balance</i>Owned Shares</span>
+                    <span id="shares">0</span></span>
+                </div>
+            </div>
+        </div>
+        <div class="col s6 m3">
+            <div class="card">
+                <div class="card-content">
+                    <span class="card-title"><i class="material-icons">analytics</i>Owned Assets</span>
+                    <span id="investedAssets">0</span></span>
+                </div>
+            </div>
+        </div>
+        <div class="col s6 m3">
+            <div class="card">
+                <div class="card-content">
+                    <span class="card-title"><i class="material-icons">wallet</i>My Wallet Assets</span>
+                    <span id="walletAssets">0</span></span>
+                </div>
+            </div>
+        </div>
+        <div class="col s6 m3">
+            <div class="card">
+                <div class="card-content">
+                    <span class="card-title"><i class="material-icons">query_stats</i>Fund Avg. APY</span>
+                    <span id="walletAssets">10%</span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateShares(balance, total, symbol) {
+            document.getElementById('shares').innerText = ethers.utils.formatEther(balance) + "/" + ethers.utils.formatEther(total) + " " + symbol;
+        }
+        function updateInvestedAssets(amount, symbol) {
+            document.getElementById('investedAssets').innerText = ethers.utils.formatEther(amount) + " " + symbol;
+        }
+        function updateWalletAssets(amount, symbol) {
+            $('#walletAssets').text(ethers.utils.formatEther(amount) + " " + symbol);
+        }
+    </script>
+
+    <div class="row">
+        <div class="col s6 m6">
+            <div class="card">
+                <div class="card-content">
+                    <span class="card-title"><i class="material-icons">account_balance</i>Investments controll
+                    </span>
+                    <div class="mt-3">
+                        <label>Amount:</label>
+                        <input type="text" id="amountInput" class="form-control">
+                    </div>
+                </div>
+                <div class="card-action">
+                    <div class="row">
+                        <div class="col s4">
+                            <button id="depositBtn" class="btn waves-effect waves-light">
+                                <i class="material-icons left">input</i>
+                                Deposit Assets
+                            </button>
+                        </div>
+                        <div class="col s4">
+                            <button id="withdrawBtn" class="btn waves-effect waves-light">
+                                <i class="material-icons left">output</i>
+                                Withdraw Assets
+                            </button>
+                        </div>
+
+                        <div class="col s4">
+                            <button id="redeemBtn" class="btn waves-effect waves-light">
+                                <i class="material-icons left">redeem</i>
+                                Redeem Shares
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col s6 m6">
+            <div class="card">
+                <div class="card-content">
+                    <span class="card-title"><i class="material-icons">account_balance</i>Vaults manager
+                    </span>
+                    <div class="mt-3">
+                        <label>Vault Address:</label>
+                        <input type="text" id="address" class="form-control">
+                    </div>
+                </div>
+                <div class="card-action">
+                    <div class="row">
+
+                        <div class="col s4"><button id="addVault" class="btn waves-effect waves-light">
+                                <i class="material-icons left">add</i>Add</button></div>
+
+                        <div class="col s4"><button id="removeVault" class="btn waves-effect waves-light">
+                                <i class="material-icons left">remove</i>Remove</button></div>
+
+                        <div class="col s4"><button id="reinvestBtn" class="btn waves-effect waves-light">
+                                <i class="material-icons left">autorenew</i>
+                                Reinvest
+                            </button></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Button trigger modal
+    <button type="button" class="btn btn-info mt-2" data-toggle="modal" data-target="#dialog">
+        Add Network
+    </button> -->
+
+    <!-- Modal -->
+    <div class="modal fade" id="dialog" tabindex="-1" role="dialog" aria-labelledby="dialogTitle" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="dialogTitle">Add Network</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table class="table">
+                        <tr>
+                            <td>Network ID:</td>
+                            <td><input type="number" id="networkId" class="form-control"></td>
+                        </tr>
+                        <tr>
+                            <td>Contract Address:</td>
+                            <td><input type="text" id="contractAddress" class="form-control"></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="save">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script>
+        const addNetworkButton = $('#addNetwork');
+        const dialog = $('#dialog');
+        const saveButton = $('#save');
+        const cancelButton = $('#cancel');
+        const networkIdInput = $('#networkId');
+        const contractAddressInput = $('#contractAddress');
+
+        saveButton.on('click', () => {
+            const networkId = networkIdInput.val();
+            const contractAddress = contractAddressInput.val();
+
+            let networks = localStorage.getItem('networks');
+            if (networks) {
+                networks = JSON.parse(networks);
+            } else {
+                networks = {};
+            }
+
+            networks[networkId] = contractAddress;
+
+            localStorage.setItem('networks', JSON.stringify(networks));
+
+            dialog.modal('hide');
+        });
+    </script>
+
+    <div>
+        <table class="striped centered responsive-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Symbol</th>
+                    <th>Our Shares</th>
+                    <th>Total Shares</th>
+                    <th>Total Assets locked</th>
+                    <th>Holding %</th>
+                    <th>Perfomance Index</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="vaultsTable">
+                <!-- Rows will be populated here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function updateVaults(items) {
+            let newTable = "";
+
+            for (const item of items) {
+                // Add a row to the table
+                const row = `<tr>
+                <td>${item.name}</td>
+                <td>${item.symbol}</td>
+                <td>${ethers.utils.formatEther(item.vaultOurShares)}</td>
+                <td>${ethers.utils.formatEther(item.vaultTotalShares)}</td>
+                <td>${ethers.utils.formatEther(item.vaultTotalAssets)}</td>
+                <td>${item.holdingPercentage.toFixed(2)}%</td>
+                <td>${item.perfomanceIndex}</td>
+                <td><button id="deleteButton" class="btn btn-danger mt-2"><i class="material-icons">delete</i></button></td>
+                </tr>`;
+
+                newTable += row;
+            }
+
+            const tableBody = document.getElementById('vaultsTable');
+            tableBody.innerHTML = newTable;
+        }
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+</body>
+
+</html>
