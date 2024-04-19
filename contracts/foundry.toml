@@ -4,7 +4,7 @@ out = "out"
 test = "test"
 libs = ["lib"]
 fs_permissions = [{ access = "read", path = "./" }]
-solc = "0.8.25"
+solc = "0.8.12"
 evm_version = 'cancun'
 
 [rpc_endpoints]

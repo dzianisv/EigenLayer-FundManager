@@ -9,6 +9,7 @@ import "./HoldingsManager.sol";
 import "eigenlayer-contracts/src/contracts/core/DelegationManager.sol";
 import "eigenlayer-contracts/src/contracts/core/StrategyManager.sol";
 
+// Testnet deployments https://github.com/Layr-Labs/eigenlayer-contracts?tab=readme-ov-file#current-testnet-deployment
 interface IUserDeployer {
     function delegationManager() external view returns (DelegationManager);
     function strategyManager() external view returns (StrategyManager);
@@ -74,7 +75,7 @@ contract Vault is ERC4626 {
         2. Check out current investment positions (add vault holdings map)
         3. redistribute available funds over available Operators to keep "stake_bps" relevant
     */
-    function _stake() {
+    function _stake() private {
 
     }
 
@@ -84,24 +85,25 @@ contract Vault is ERC4626 {
         2. Check out current investment positions (add vault holdings map)
         3. withdraw available funds from the available Operators to keep "stake_bps" relevant
     */
-    function _unstake() {
+    function _unstake() private {
 
     }
 
     /*  Called from the _stake()
         Interact with EigenLayer DelegationManager
+        https://github.com/Layr-Labs/eigenlayer-contracts/blob/dev/src/test/integration/users/User.t.sol#L392
+        https://github.com/Layr-Labs/eigenlayer-contracts/blob/dev/src/test/integration/users/User.t.sol#L91
     */
-    function _delegate() {
+    function _depositAndDelegateToEigenLayerOperator() private {
 
     }
 
     /*
         Called from _unstake()
         Interacts with EigenLayer DelegationManager
-        Check out https://github.com/Layr-Labs/eigenlayer-contracts/blob/7229f2b426b6f2a24c7795b1a4687a010eac8ef2/src/test/integration/users/User.t.sol#L19 
-
+        Check out 
     */
-    function _undelegate() {
+    function _undelegateFromEigenLayerOperator() private  {
 
     }
 }
