@@ -140,6 +140,12 @@ contract Vault is ERC4626 {
     ) private {
         DelegationManager delegationManager = eigenLayerContracts
             .delegationManager();
+        StrategyManager strategyManager = eigenLayerContracts.strategyManager();
+        IStrategy strategy = IStrategy(0x7D704507b76571a51d9caE8AdDAbBFd0ba0e63d3);
+        IERC20 underlyingToken = strategy.underlyingToken();
+        //deposit into the strategy
+        strategyManager.depositIntoStrategy(strategy, underlyingToken, amount);
+
         // Create empty data
         ISignatureUtils.SignatureWithExpiry memory approverSignatureAndExpiry;
         uint256 expiry = type(uint256).max;
