@@ -1,13 +1,6 @@
 name: test
 
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-    types: [opened, synchronize, reopened]
-    branches:
-      - master
+on: [push]
 
 jobs:
   check:
