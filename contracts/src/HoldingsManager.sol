@@ -4,16 +4,6 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 
-/*
- Hodlings Manager contains the map of EigenLayer operators
- 1. Import EigenLayer operator contract interface
- 2. Create a map of the Operator-> uind265 stake_bps
- 3. Use OpenZeppelin role access control for Manager role grant and revoke
- 6. Implement `setOperator(Operator operator, uint265 stake_bps)`, this funciton could be called just by manager
- 7. Implement the getter that returns the array of the structs {Operator, stake_bps}
- 8. The user who is deploying this smart contract has to pass the address for the Admin (who is also the initial Manager).
-*/
-
 interface IEigenLayerOperator {
     // Example function (assuming what might be relevant)
     function getDetails() external view returns (string memory);
@@ -24,7 +14,7 @@ contract HoldingsManager is AccessControlEnumerable {
 
     // Mapping of operators to their stake in basis points
     using EnumerableMap for EnumerableMap.AddressToUintMap;
-    EnumerableMap.AddressToUintMap private _operatorStakes;  
+    EnumerableMap.AddressToUintMap private _operatorStakes;  // Target Portfolio holdings map: OperatorAddress:TargetStakeInBps
 
     constructor(address admin) {
         // The deploying user sets the admin and initial manager
