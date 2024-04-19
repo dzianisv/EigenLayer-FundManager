@@ -9,6 +9,8 @@ import "./HoldingsManager.sol";
 import "eigenlayer-contracts/src/contracts/core/DelegationManager.sol";
 import "eigenlayer-contracts/src/contracts/core/StrategyManager.sol";
 
+import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
+
 // Testnet deployments https://github.com/Layr-Labs/eigenlayer-contracts?tab=readme-ov-file#current-testnet-deployment
 interface IEgeneLayerConstracts {
     function delegationManager() external view returns (DelegationManager);
@@ -16,11 +18,19 @@ interface IEgeneLayerConstracts {
 }
 
 contract Vault is ERC4626 {
+    uint256 totalDepositedTokens;
     // Assuming HoldingsManager is defined elsewhere in your project
     HoldingsManager holdingsManager;
     IEgeneLayerConstracts eigenLayerContracts;
 
-    constructor(IERC20Metadata _underlyingAsset, IEgeneLayerConstracts _eigenLayerContracts, HoldingsManager _holdingsManager)
+    using EnumerableMap for EnumerableMap.AddressToUintMap;
+    EnumerableMap.AddressToUintMap private stakedTokensPortfolio; // Map that represents current stake porfolio: OperatorAddress:AssetTokensStaked
+
+    constructor(
+        IERC20Metadata _underlyingAsset,
+        IEgeneLayerConstracts _eigenLayerContracts,
+        HoldingsManager _holdingsManager
+    )
         ERC4626(_underlyingAsset)
         ERC20(
             string(abi.encodePacked("Vault for ", _underlyingAsset.name())),
@@ -31,14 +41,8 @@ contract Vault is ERC4626 {
         holdingsManager = _holdingsManager;
     }
 
-    function totalAssets()
-        public
-        view
-        override
-        returns (uint256)
-    {
-        // Implementation of how to calculate total assets
-        return 0;
+    function totalAssets() public view override returns (uint256) {
+        return totalDepositedTokens;
     }
 
     function withdraw(
@@ -46,9 +50,9 @@ contract Vault is ERC4626 {
         address receiver,
         address owner
     ) public override returns (uint256) {
-        uint256 r = super.withdraw(assets, receiver, owner);
-        _unstake(r);
-        return r;
+        // uint256 unstaked_amount = _unstake(assets);
+        // return super.withdraw(unstaked_amount, receiver, owner);
+        revert("withdraw function is not supported");
     }
 
     function redeem(
@@ -56,17 +60,14 @@ contract Vault is ERC4626 {
         address receiver,
         address owner
     ) public override returns (uint256) {
-        uint256 r = super.redeem(shares, receiver, owner);
-        // TODO: what does redeem returns?
-        _unstake(r);
-        return r;
+        revert("Redeem function is not supported");
     }
 
     function deposit(
         uint256 assets,
         address receiver
     ) public override returns (uint256) {
-        uint256 deposited =  super.deposit(assets, receiver);
+        uint256 deposited = super.deposit(assets, receiver);
         _stake(deposited);
         return deposited;
     }
@@ -78,24 +79,56 @@ contract Vault is ERC4626 {
         return super.mint(shares, receiver);
     }
 
-
-    /* Function has to be called from deposit()
-        1. Get the list of Operators and stake in the porfolio
-        2. Check out current investment positions (add vault holdings map)
-        3. redistribute available funds over available Operators to keep "stake_bps" relevant
-    */
     function _stake(uint256 deposited) private {
-
+        _redistribute();
     }
 
+    function _unstake(uint256 withdrawn) private returns (uint256) {
+        _redistribute();
+    }
 
-    /* Function has to be called from withdraw()
-        1. Get the list of Operators and stake in the porfolio
-        2. Check out current investment positions (add vault holdings map)
-        3. withdraw available funds from the available Operators to keep "stake_bps" relevant
-    */
-    function _unstake(uint256 withdrawn) private {
+    function _redistribute() private {
+        (address[] memory operators, uint256[] memory targetStakesBps) = holdingsManager.getAllOperatorStakes();
+        uint256 totalAssets = this.totalAssets();  // Total assets managed by the vault
 
+        // Iterate through the portfolio to adjust or remove stakes
+        for (uint i = 0; i < stakedTokensPortfolio.length(); i++) {
+            (address operator, uint256 currentStake) = stakedTokensPortfolio.at(i);
+            uint256 targetStake = _calculateTargetStake(operator, totalAssets, operators, targetStakesBps);
+
+            if (targetStake > currentStake) {
+                uint256 amountToStake = targetStake - currentStake;
+                _depositAndDelegateToEigenLayerOperator(operator, amountToStake);
+                stakedTokensPortfolio.set(operator, targetStake);  // Update the portfolio map to reflect the new stake
+            } else if (currentStake > targetStake) {
+                uint256 amountToUnstake = currentStake - targetStake;
+                _undelegateFromEigenLayerOperator(operator, amountToUnstake);
+                if (targetStake == 0) {
+                    stakedTokensPortfolio.remove(operator);  // Remove operator from portfolio if no longer needed
+                } else {
+                    stakedTokensPortfolio.set(operator, targetStake);  // Update the portfolio
+                }
+            }
+        }
+
+        // Handle any new operators not already in the portfolio
+        for (uint j = 0; j < operators.length; j++) {
+            address operator = operators[j];
+            uint256 targetStake = totalAssets * targetStakesBps[j] / 10000;
+            if (!stakedTokensPortfolio.contains(operator) && targetStake > 0) {
+                _depositAndDelegateToEigenLayerOperator(operator, targetStake);
+                stakedTokensPortfolio.set(operator, targetStake);  // Add new operator to the portfolio
+            }
+        }
+    }
+
+    function _calculateTargetStake(address operator, uint256 totalAssets, address[] memory operators, uint256[] memory targetStakesBps) private pure returns (uint256) {
+        for (uint i = 0; i < operators.length; i++) {
+            if (operators[i] == operator) {
+                return totalAssets * targetStakesBps[i] / 10000;
+            }
+        }
+        return 0;  // Return 0 if the operator is not found in the target distribution
     }
 
     /*  Called from the _stake()
@@ -103,11 +136,19 @@ contract Vault is ERC4626 {
         https://github.com/Layr-Labs/eigenlayer-contracts/blob/dev/src/test/integration/users/User.t.sol#L392
         https://github.com/Layr-Labs/eigenlayer-contracts/blob/dev/src/test/integration/users/User.t.sol#L91
     */
-    function _depositAndDelegateToEigenLayerOperator(address operatorAddress, bytes memory approverSignature, bytes32 approverSalt) private {
-        DelegationManager delegationManager = eigenLayerContracts.delegationManager();
+    function _depositAndDelegateToEigenLayerOperator(
+        address operatorAddress,
+        uint256 amount
+    ) private {
+        DelegationManager delegationManager = eigenLayerContracts
+            .delegationManager();
         // Create empty data
         ISignatureUtils.SignatureWithExpiry memory approverSignatureAndExpiry;
         uint256 expiry = type(uint256).max;
+
+        //TODO: get them from HoldingsManager?
+        bytes memory approverSignature; 
+        bytes32 approverSalt = 0x0; 
 
         // Get signature
         if (approverSignature.length > 0) {
@@ -124,15 +165,14 @@ contract Vault is ERC4626 {
         delegationManager.delegateTo(operatorAddress, approverSignatureAndExpiry, salt);
     }
 
-
     /*
         Called from _unstake()
         Interacts with EigenLayer DelegationManager
         Check out 
     */
-    function _undelegateFromEigenLayerOperator() private {
+    function _undelegateFromEigenLayerOperator(address operator, uint256 amount) private {
         DelegationManager delegationManager = eigenLayerContracts.delegationManager();
-
+        //TODO: undelegate just a part of the staked tokens
         // Call the undelegate function
         delegationManager.undelegate(address(this));
     }
