@@ -5,17 +5,14 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "./HoldingsManager.sol";
+import {IEgeneLayerConstracts} from "./EigenLayerContracts.sol";
 
 import "eigenlayer-contracts/src/contracts/core/DelegationManager.sol";
 import "eigenlayer-contracts/src/contracts/core/StrategyManager.sol";
 
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 
-// Testnet deployments https://github.com/Layr-Labs/eigenlayer-contracts?tab=readme-ov-file#current-testnet-deployment
-interface IEgeneLayerConstracts {
-    function delegationManager() external view returns (DelegationManager);
-    function strategyManager() external view returns (StrategyManager);
-}
+
 
 contract Vault is ERC4626 {
     uint256 totalDepositedTokens;
@@ -41,7 +38,7 @@ contract Vault is ERC4626 {
         holdingsManager = _holdingsManager;
     }
 
-    function totalAssets() public view override returns (uint256) {
+    function totalDeposited() public view returns (uint256) {
         return totalDepositedTokens;
     }
 
@@ -68,6 +65,7 @@ contract Vault is ERC4626 {
         address receiver
     ) public override returns (uint256) {
         uint256 deposited = super.deposit(assets, receiver);
+        totalDepositedTokens += assets;
         _stake(deposited);
         return deposited;
     }
