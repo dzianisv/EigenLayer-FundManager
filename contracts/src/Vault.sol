@@ -22,7 +22,6 @@ contract Vault is ERC4626 {
     // Assuming HoldingsManager is defined elsewhere in your project
     HoldingsManager holdingsManager;
     IEgeneLayerConstracts eigenLayerContracts;
-    bytes approverSignature; //TODO: implement per validator
 
     using EnumerableMap for EnumerableMap.AddressToUintMap;
     EnumerableMap.AddressToUintMap private stakedTokensPortfolio; // Map that represents current stake porfolio: OperatorAddress:AssetTokensStaked
@@ -144,20 +143,26 @@ contract Vault is ERC4626 {
         DelegationManager delegationManager = eigenLayerContracts
             .delegationManager();
         // Create empty data
-        ISignatureUtils.SignatureWithExpiry memory emptySig;
+        ISignatureUtils.SignatureWithExpiry memory approverSignatureAndExpiry;
         uint256 expiry = type(uint256).max;
 
-        // Get signature
-        ISignatureUtils.SignatureWithExpiry memory approverSignatureAndExpiry;
-        approverSignatureAndExpiry.expiry = expiry;
-        approverSignatureAndExpiry.signature = approverSignature; // use the provided signature
+        //TODO: get them from HoldingsManager?
+        bytes memory approverSignature; 
+        bytes32 approverSalt = 0x0; 
 
-        // Delegate
-        delegationManager.delegateTo(
-            operatorAddress,
-            approverSignatureAndExpiry,
-            bytes32(0)
-        );
+        // Get signature
+        if (approverSignature.length > 0) {
+            // Get signature
+            approverSignatureAndExpiry.expiry = expiry;
+            approverSignatureAndExpiry.signature = approverSignature; // use the provided signature
+        } else {
+            // Use empty signature
+            approverSignatureAndExpiry = ISignatureUtils.SignatureWithExpiry({expiry: expiry, signature: ""});
+        }
+        // Use provided salt if it's not zero, otherwise use zero salt
+        bytes32 salt = approverSalt != bytes32(0) ? approverSalt : bytes32(0);
+        // Delegate to the operator
+        delegationManager.delegateTo(operatorAddress, approverSignatureAndExpiry, salt);
     }
 
     /*
@@ -165,8 +170,10 @@ contract Vault is ERC4626 {
         Interacts with EigenLayer DelegationManager
         Check out 
     */
-    function _undelegateFromEigenLayerOperator(
-        address operatorAddress,
-        uint256 amount
-    ) private {}
+    function _undelegateFromEigenLayerOperator(address operator, uint256 amount) private {
+        DelegationManager delegationManager = eigenLayerContracts.delegationManager();
+        //TODO: undelegate just a part of the staked tokens
+        // Call the undelegate function
+        delegationManager.undelegate(address(this));
+    }
 }
