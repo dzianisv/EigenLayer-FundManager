@@ -19,8 +19,10 @@ contract VaultScript is Script {
     function setUp() public {}
 
     function run() public {
-        uint256 privateKey = vm.envUint("PRIVATE_KEY");
-        vm.startBroadcast(privateKey);
+        // uint256 privateKey = vm.envUint("PRIVATE_KEY");
+        // vm.startBroadcast(privateKey);
+
+        vm.startBroadcast();
 
         TestCoin rewardsToken = new TestCoin("AVS1 Rewards Token", "AVS1");
         rewardsToken.mint(msg.sender, 100);
