@@ -19,6 +19,7 @@ import {MyOperator} from "../src/MyOperator.sol";
 
 contract DeployVault is Script {
     using AddressLibrary for address;
+    using AddressLibrary for string;
 
     function setUp() public {}
 
@@ -30,7 +31,7 @@ contract DeployVault is Script {
         
         // ETHx @ Honesky: https://holesky.etherscan.io/token/
         ERC20 liquidStakedToken = ERC20(address(0xB4F5fc289a778B80392b86fa70A7111E5bE0F859));
-        IEigenLayerContracts elContracts = IEigenLayerContracts(vm.envAddress("EIGEN_LAYER_CONTRACTS_ADDRESS"));
+        IEigenLayerContracts elContracts = IEigenLayerContracts(vm.readFile(".data/EigenLayerContracts.txt").toAddress());
         
         vm.startBroadcast();
         HoldingsManager holdingsManager = new HoldingsManager(address(msg.sender));
@@ -39,7 +40,7 @@ contract DeployVault is Script {
         holdingsManager.setOperator(address(0xbE4B4Fa92b6767FDa2C8D1db53A286834dB19638), 100000);
         vm.stopBroadcast();
 
-        vm.writeFile('.data/vault.txt', address(vault).toHexString());
+        vm.writeFile('.data/Vault.txt', address(vault).toHexString());
         console2.log("HoldingsManager address", address(holdingsManager));
         console2.log("Vault address", address(vault));
         

@@ -9,18 +9,20 @@ import "../src/Vault.sol";
 import "@openzeppelin/contracts/interfaces/IERC4626.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-import {Vault} from "../src/Vault.sol";
+import "../src/Vault.sol";
 import "../test/TestCoin.sol";
-import {HoldingsManager} from "../src/HoldingsManager.sol";
-import {IEigenLayerContracts, TestnetContracts} from "../src/EigenLayerContracts.sol";
-import {MyOperator} from "../src/MyOperator.sol";
-
+import "../src/HoldingsManager.sol";
+import "../src/EigenLayerContracts.sol";
+import "./AddressLibrary.sol";
 
 contract TestDeposit is Script {
+    using AddressLibrary for string;
+
     function setUp() public {}
 
     function run() public {
-        Vault vault = Vault(vm.envAddress("VAULT_ADDRESS"));
+        Vault vault = Vault(vm.readFile(".data/Vault.txt").toAddress());
+
         // ETHx
         ERC20 liquidStakedToken = ERC20(address(0xB4F5fc289a778B80392b86fa70A7111E5bE0F859));
         uint256 testDeposit = 100;

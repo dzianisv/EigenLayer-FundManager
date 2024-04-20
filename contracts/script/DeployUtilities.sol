@@ -34,7 +34,7 @@ contract DeployRewardsToken is Script {
 
 contract DeployEingenLayerContracts is Script {
     using AddressLibrary for address;
-    
+
     function setUp() public {}
 
     function run() public {
