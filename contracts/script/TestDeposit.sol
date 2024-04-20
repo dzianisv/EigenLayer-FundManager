@@ -60,11 +60,14 @@ contract TestMyOperator is Script {
 
     function run() public {
         IEigenLayerContracts eigenLayerContracts = IEigenLayerContracts(vm.envAddress("EIGEN_LAYER_CONTRACTS_ADDRESS"));
+
         ERC20 liquidStakedToken = ERC20(address(0xB4F5fc289a778B80392b86fa70A7111E5bE0F859));
+        console2.log(liquidStakedToken.symbol(), liquidStakedToken.balanceOf(msg.sender));
+
         MyOperator mOperator = MyOperator(vm.envAddress("MY_OPERATOR_ADDRESS"));
 
         vm.startBroadcast();
-        liquidStakedToken.approve(address(mOperator), 1);
+        liquidStakedToken.transfer(address(mOperator), 1);
         mOperator.stake(liquidStakedToken, 1, eigenLayerContracts);
         vm.stopBroadcast();
     }

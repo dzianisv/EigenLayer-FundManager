@@ -34,13 +34,15 @@ contract MyOperator {
 
     function stake(ERC20 token, uint256 amount, IEigenLayerContracts eigenLayerContracts) external { 
         _depositToEigenLayer(token, amount, eigenLayerContracts);
-        _delegateToEigenLayer(eigenLayerContracts);
+        
+        if (!eigenLayerContracts.delegationManager().isDelegated(address(this))) {
+            _delegateToEigenLayer(eigenLayerContracts);
+        }
     }
 
     function _depositToEigenLayer(ERC20 token, uint256 amount, IEigenLayerContracts eigenLayerContracts) private { 
         IStrategy strategy = eigenLayerContracts.strategy(token.symbol());
         IStrategyManager strategyManager = eigenLayerContracts.strategyManager();
-
         token.approve(address(strategyManager), amount); 
         strategyManager.depositIntoStrategy(strategy, token, amount);
     }
