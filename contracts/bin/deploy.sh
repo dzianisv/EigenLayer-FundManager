@@ -2,16 +2,8 @@
 
 set -eu
 
-
-if [ -n "${BLOCK_EXPLORER_API_KEY:-}" ]; then
-    args="--verify   --etherscan-api-key $BLOCK_EXPLORER_API_KEY"
-    # args="$args --verifier-url $BLOCK_EXPLORER"
-else
-    args=
-fi
-
 forge script \
      --broadcast --rpc-url "${ETH_RPC_URL}" \
      --private-key "${ETH_PRIVATE_KEY}" \
-     $args \
-     script/Deploy.sol:DeployVault
+     --verify   --etherscan-api-key "$BLOCK_EXPLORER_API_KEY"
+    script/Deploy.sol:$*

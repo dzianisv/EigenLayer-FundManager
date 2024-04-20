@@ -28,12 +28,31 @@ contract TestDeposit is Script {
 
 
         vm.startBroadcast();
+    
         liquidStakedToken.approve(address(vault), testDeposit);
         vault.deposit(testDeposit, msg.sender);
         console2.log("totalDeposited()", vault.totalDeposited());
         console2.log("totalAssets()", vault.totalAssets());
         console2.log("balanceOf()", vault.balanceOf(msg.sender));
-        
+
+        vm.stopBroadcast();
+    }
+}
+
+contract TestMyOperator is Script {
+    function setUp() public {}
+
+    function run() public {
+        IEigenLayerContracts eigenLayerContracts = IEigenLayerContracts(vm.envAddress("EIGEN_LAYER_CONTRACTS_ADDRESS"));
+        ERC20 liquidStakedToken = ERC20(address(0xB4F5fc289a778B80392b86fa70A7111E5bE0F859));
+        uint256 testDeposit = 100;
+
+        vm.startBroadcast();
+        // Coinbase Operator: https://holesky.etherscan.io/address/0xbe4b4fa92b6767fda2c8d1db53a286834db19638
+        MyOperator mOperator = new MyOperator(address(0xbE4B4Fa92b6767FDa2C8D1db53A286834dB19638));
+        console2.log("MyOperator address", address(mOperator));
+        liquidStakedToken.approve(address(mOperator), 10);
+        mOperator.stake(liquidStakedToken, 10, eigenLayerContracts);
         vm.stopBroadcast();
     }
 }
