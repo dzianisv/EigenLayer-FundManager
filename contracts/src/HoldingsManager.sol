@@ -36,13 +36,8 @@ contract HoldingsManager is AccessControlEnumerable {
     function setOperator(address operator, uint256 stakeBps) external onlyRole(MANAGER_ROLE) {
         require(operator != address(0), "Invalid operator address");
 
-        uint160 myOperatorAddress = 
-        MyOperator myOperator;
-
-        if (_operators.contains(operator)) {
-            myOperator = MyOperator(address(uint160(_operators.get(operator))));
-        } else {
-             myOperator = new MyOperator(operator);
+        if (!_operators.contains(operator)) {
+            MyOperator myOperator = new MyOperator(operator);
             _operators.set(operator, uint160(address(myOperator)));
         }
 
