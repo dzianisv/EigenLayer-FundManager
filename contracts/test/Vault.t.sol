@@ -26,7 +26,7 @@ contract AssetManagerTest is Test {
 
         IEigenLayerContracts elContracts = new TestnetContracts();
         HoldingsManager holdingsManager = new HoldingsManager(address(msg.sender));
-        vault = new Vault(liquidStakedToken, holdingsManager);
+        vault = new Vault(liquidStakedToken, holdingsManager, elContracts);
     }
 
     function test_ERC20UnderlyingAsset() public {

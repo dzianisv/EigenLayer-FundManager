@@ -1,6 +1,6 @@
 const networks = {
     31337: {name: "localnet", contract: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"},
-    17000: {name: "Holesky", contract: "0x8D2461Cd44777377290E34908cDA239098a24b22", explorer: "https://holesky.etherscan.io/address"},
+    17000: {name: "Holesky", contract: "0xB9a469cC3349e3FFd53D007c7669609cA83b5Fc1", explorer: "https://holesky.etherscan.io/address"},
 };
 
 const txOptions = {
@@ -141,15 +141,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('depositBtn').addEventListener('click', async () => {
         const amount = ethers.utils.parseEther(document.getElementById('amountInput').value);
         try {
-            console.log("Approve", amount);
-            await assetTokenContract.approve(contractAddress, amount);
+            
+            {
+                console.log("Approve", amount);
+                let tx = await assetTokenContract.approve(contractAddress, amount);
+                console.log("Approved", await tx.wait());
+            }
 
-            console.log("Deposit", amount, assetSymbol);
-            const tx = await vaultContract.deposit(amount, await signer.getAddress());
-            await tx.wait();
+            {
+                console.log("Deposit", amount, assetSymbol);
+                const tx = await vaultContract.deposit(amount, await signer.getAddress());
+                console.log("Deposited", await tx.wait());
+            }
+
             fetchAll();
         } catch (error) {
-            console.error("Deposit failed:", error);
+            console.error("Deposit failed", error);
             alert(JSON.stringify(error));
         }
     });
@@ -167,18 +174,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Redeem
-    // document.getElementById('redeemBtn').addEventListener('click', async () => {
-    //     const shares = ethers.utils.parseEther(document.getElementById('amountInput').value);
-    //     try {
-    //         const tx = await vaultContract.redeem(shares, await signer.getAddress(), await signer.getAddress(), txOptions);
-    //         await tx.wait();
-    //         fetchAll();
-    //     } catch (error) {
-    //         console.error("Redeem failed:", error);
-    //         alert(JSON.stringify(error));
-    //     }
-    // });
+    document.getElementById('setOperator').addEventListener('click', async () => {
+        const operatorAddress = ethers.utils.parseEther(document.getElementById('operatorAddress').value);
+        const operatorStakeBps = Math.floor(parseFloat(document.getElementById("operatorStake").value));
+
+        try {
+            const tx = await holdingPercentage.setOperator(operatorAddress, operatorStakeBps, txOptions);
+            await tx.wait();
+            fetchAll();
+        } catch (error) {
+            console.error("setOperator failed:", error);
+            alert("setOperator failed: " + JSON.stringify(error));
+        }
+    });
 
 
     async function updateHoldingsTable() {

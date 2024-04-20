@@ -16,17 +16,15 @@ import {IEigenLayerContracts, TestnetContracts} from "../src/EigenLayerContracts
 import {MyOperator} from "../src/MyOperator.sol";
 
 
-contract VaultScript is Script {
+contract DeployVault is Script {
     function setUp() public {}
 
     function run() public {
         // uint256 privateKey = vm.envUint("PRIVATE_KEY");
         // vm.startBroadcast(privateKey);
 
+        // IERC20 rewardsToken = IERC20(vm.envAddress("REWARDS_TOKEN_ADDRESS"))
         vm.startBroadcast();
-
-        TestCoin rewardsToken = new TestCoin("AVS1 Rewards Token", "AVS1");
-        rewardsToken.mint(msg.sender, 100);
 
         // ETHx @ Honesky: https://holesky.etherscan.io/token/
         ERC20 liquidStakedToken = ERC20(address(0xB4F5fc289a778B80392b86fa70A7111E5bE0F859));
@@ -34,12 +32,23 @@ contract VaultScript is Script {
         IEigenLayerContracts elContracts = new TestnetContracts();
         HoldingsManager holdingsManager = new HoldingsManager(address(msg.sender));
         
-        Vault vault = new Vault(liquidStakedToken, holdingsManager);
+        Vault vault = new Vault(liquidStakedToken, holdingsManager, elContracts);
         // Coinbase Operator: https://holesky.etherscan.io/address/0xbe4b4fa92b6767fda2c8d1db53a286834db19638
-        MyOperator cbOperator = new MyOperator(address(0xbE4B4Fa92b6767FDa2C8D1db53A286834dB19638), vault, elContracts);
+        holdingsManager.setOperator(address(0xbE4B4Fa92b6767FDa2C8D1db53A286834dB19638), 100000);
+        console2.log("Vault address", address(vault));
+        vm.stopBroadcast();
+    }
+}
 
-        holdingsManager.setOperator(address(cbOperator), 100000);
 
+contract RewardsTokenScript is Script {
+    function setUp() public {}
+
+    function run() public {
+        vm.startBroadcast();
+        TestCoin rewardsToken = new TestCoin("AVS1 Rewards Token", "AVS1");
+        rewardsToken.mint(msg.sender, 100);
+        console2.log("Rewards token address", address(rewardsToken));
         vm.stopBroadcast();
     }
 }
