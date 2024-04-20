@@ -3,10 +3,16 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import "eigenlayer-contracts/src/contracts/core/DelegationManager.sol";
+import "eigenlayer-contracts/src/contracts/core/StrategyManager.sol";
+import "eigenlayer-contracts/src/contracts/interfaces/IDelegationManager.sol";
+import "eigenlayer-contracts/src/contracts/interfaces/IStrategy.sol";
 
+import {IEigenLayerContracts} from "./EigenLayerContracts.sol";
 
 contract MyOperator {
-    address operatorAddress;
+    address public operatorAddress;
 
     constructor(address _operator) {
         this.operatorAddress = _operator;
@@ -14,16 +20,18 @@ contract MyOperator {
 
     function stake(
         uint256 amount, 
-        IERC20 token
-    ) private {
+        IERC20Metadata token,
+        IEigenLayerContracts eigenLayerContracts
+    ) public {
         token.transferFrom(msg.sender, address(this));
 
-        DelegationManager delegationManager = eigenLayerContracts
-            .delegationManager();
+        DelegationManager delegationManager = eigenLayerContracts.delegationManager();
         StrategyManager strategyManager = eigenLayerContracts.strategyManager();
-        IStrategy strategy = eigenLayerContracts.getStrategy(vault.asset());
+        IStrategy strategy = eigenLayerContracts.getStrategy(token);
 
         IERC20 underlyingToken = strategy.underlyingToken();
+        require(address(token) == address(underlyingToken), "EigenLayer IStrategy doesn't match to the token");
+
         //deposit into the strategy
         strategyManager.depositIntoStrategy(strategy, underlyingToken, amount);
 

@@ -6,11 +6,6 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 
-import "eigenlayer-contracts/src/contracts/core/DelegationManager.sol";
-import "eigenlayer-contracts/src/contracts/core/StrategyManager.sol";
-import "eigenlayer-contracts/src/contracts/interfaces/IDelegationManager.sol";
-import "eigenlayer-contracts/src/contracts/interfaces/IStrategy.sol";
-
 import "./HoldingsManager.sol";
 import {IEigenLayerContracts} from "./EigenLayerContracts.sol";
 
