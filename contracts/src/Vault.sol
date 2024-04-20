@@ -4,28 +4,32 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import "./HoldingsManager.sol";
-import {IEgeneLayerConstracts} from "./EigenLayerContracts.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 
 import "eigenlayer-contracts/src/contracts/core/DelegationManager.sol";
 import "eigenlayer-contracts/src/contracts/core/StrategyManager.sol";
+import "eigenlayer-contracts/src/contracts/interfaces/IDelegationManager.sol";
+import "eigenlayer-contracts/src/contracts/interfaces/IStrategy.sol";
 
-import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
-
+import "./HoldingsManager.sol";
+import {IEigenLayerContracts} from "./EigenLayerContracts.sol";
 
 
 contract Vault is ERC4626 {
-    uint256 totalDepositedTokens;
     // Assuming HoldingsManager is defined elsewhere in your project
     HoldingsManager holdingsManager;
-    IEgeneLayerConstracts eigenLayerContracts;
+    DelegationManager delegationManager;
+    StrategyManager strategyManager;
+    IStrategy strategy;
 
     using EnumerableMap for EnumerableMap.AddressToUintMap;
-    EnumerableMap.AddressToUintMap private stakedTokensPortfolio; // Map that represents current stake porfolio: OperatorAddress:AssetTokensStaked
+    
+    uint256 private _totalDepositedTokens;
+    EnumerableMap.AddressToUintMap private _stakedTokensPortfolio; // Map that represents current stake porfolio: OperatorAddress:AssetTokensStaked
 
     constructor(
         IERC20Metadata _underlyingAsset,
-        IEgeneLayerConstracts _eigenLayerContracts,
+        IEigenLayerContracts _eigenLayerContracts,
         HoldingsManager _holdingsManager
     )
         ERC4626(_underlyingAsset)
@@ -34,12 +38,14 @@ contract Vault is ERC4626 {
             string(abi.encodePacked("cb", _underlyingAsset.symbol()))
         )
     {
-        eigenLayerContracts = _eigenLayerContracts;
         holdingsManager = _holdingsManager;
+        delegationManager = _eigenLayerContracts.delegationManager();
+        strategyManager = _eigenLayerContracts.strategyManager();
+        strategy = _eigenLayerContracts.strategy(_underlyingAsset.symbol());
     }
 
     function totalDeposited() public view returns (uint256) {
-        return totalDepositedTokens;
+        return _totalDepositedTokens;
     }
 
     function withdraw(
@@ -65,7 +71,7 @@ contract Vault is ERC4626 {
         address receiver
     ) public override returns (uint256) {
         uint256 deposited = super.deposit(assets, receiver);
-        totalDepositedTokens += assets;
+        _totalDepositedTokens += assets;
         _stake(deposited);
         return deposited;
     }
@@ -90,21 +96,22 @@ contract Vault is ERC4626 {
         uint256 totalAssets = this.totalAssets();  // Total assets managed by the vault
 
         // Iterate through the portfolio to adjust or remove stakes
-        for (uint i = 0; i < stakedTokensPortfolio.length(); i++) {
-            (address operator, uint256 currentStake) = stakedTokensPortfolio.at(i);
-            uint256 targetStake = _calculateTargetStake(operator, totalAssets, operators, targetStakesBps);
+        for (uint i = 0; i < _stakedTokensPortfolio.length(); i++) {
+            (address operator, uint256 currentStake) = _stakedTokensPortfolio.at(i);
+            uint256 targetStake = _calculateTargetStake(operator, totalAssets);
 
             if (targetStake > currentStake) {
                 uint256 amountToStake = targetStake - currentStake;
-                _depositAndDelegateToEigenLayerOperator(operator, amountToStake);
-                stakedTokensPortfolio.set(operator, targetStake);  // Update the portfolio map to reflect the new stake
+                _delegateTo(operator);
+                _depositIntoEigenLayer(amountToStake);
+                _stakedTokensPortfolio.set(operator, targetStake);  // Update the portfolio map to reflect the new stake
             } else if (currentStake > targetStake) {
-                uint256 amountToUnstake = currentStake - targetStake;
-                _undelegateFromEigenLayerOperator(operator, amountToUnstake);
+                _withdrawFromEigenLayer(currentStake);
                 if (targetStake == 0) {
-                    stakedTokensPortfolio.remove(operator);  // Remove operator from portfolio if no longer needed
+                    _stakedTokensPortfolio.remove(operator);  // Remove operator from portfolio if no longer needed
                 } else {
-                    stakedTokensPortfolio.set(operator, targetStake);  // Update the portfolio
+                    _depositIntoEigenLayer(targetStake);
+                    _stakedTokensPortfolio.set(operator, targetStake);  // Update the portfolio
                 }
             }
         }
@@ -113,18 +120,17 @@ contract Vault is ERC4626 {
         for (uint j = 0; j < operators.length; j++) {
             address operator = operators[j];
             uint256 targetStake = totalAssets * targetStakesBps[j] / 10000;
-            if (!stakedTokensPortfolio.contains(operator) && targetStake > 0) {
-                _depositAndDelegateToEigenLayerOperator(operator, targetStake);
-                stakedTokensPortfolio.set(operator, targetStake);  // Add new operator to the portfolio
+            if (!_stakedTokensPortfolio.contains(operator) && targetStake > 0) {
+                _delegateTo(operator);
+                _depositIntoEigenLayer(targetStake);
+                _stakedTokensPortfolio.set(operator, targetStake);  // Add new operator to the portfolio
             }
         }
     }
 
-    function _calculateTargetStake(address operator, uint256 totalAssets, address[] memory operators, uint256[] memory targetStakesBps) private pure returns (uint256) {
-        for (uint i = 0; i < operators.length; i++) {
-            if (operators[i] == operator) {
-                return totalAssets * targetStakesBps[i] / 10000;
-            }
+    function _calculateTargetStake(address operator, uint256 totalAssets) private view returns (uint256) {
+        if (holdingsManager.existsOperator(operator)) {
+            return totalAssets * holdingsManager.getOperatorStake(operator) / 10000;
         }
         return 0;  // Return 0 if the operator is not found in the target distribution
     }
@@ -134,23 +140,13 @@ contract Vault is ERC4626 {
         https://github.com/Layr-Labs/eigenlayer-contracts/blob/dev/src/test/integration/users/User.t.sol#L392
         https://github.com/Layr-Labs/eigenlayer-contracts/blob/dev/src/test/integration/users/User.t.sol#L91
     */
-    function _depositAndDelegateToEigenLayerOperator(
-        address operatorAddress,
-        uint256 amount
-    ) private {
-        DelegationManager delegationManager = eigenLayerContracts
-            .delegationManager();
-        StrategyManager strategyManager = eigenLayerContracts.strategyManager();
-        IStrategy strategy = IStrategy(0x7D704507b76571a51d9caE8AdDAbBFd0ba0e63d3);
-        IERC20 underlyingToken = strategy.underlyingToken();
-        //deposit into the strategy
-        strategyManager.depositIntoStrategy(strategy, underlyingToken, amount);
 
+    function _delegateTo(address operator) private {
         // Create empty data
         ISignatureUtils.SignatureWithExpiry memory approverSignatureAndExpiry;
         uint256 expiry = type(uint256).max;
 
-        //TODO: get them from HoldingsManager?
+        // TODO: get them from HoldingsManager?
         bytes memory approverSignature; 
         bytes32 approverSalt = 0x0; 
 
@@ -165,8 +161,18 @@ contract Vault is ERC4626 {
         }
         // Use provided salt if it's not zero, otherwise use zero salt
         bytes32 salt = approverSalt != bytes32(0) ? approverSalt : bytes32(0);
-        // Delegate to the operator
-        delegationManager.delegateTo(operatorAddress, approverSignatureAndExpiry, salt);
+
+        delegationManager.delegateTo(operator, approverSignatureAndExpiry, salt);
+    }
+
+    function _depositIntoEigenLayer(
+        uint256 amount
+    ) private {
+        IERC20 underlyingToken = strategy.underlyingToken();
+
+        // deposit into the strategy
+        approve(address(strategyManager), amount);
+        strategyManager.depositIntoStrategy(strategy, underlyingToken, amount);
     }
 
     /*
@@ -174,10 +180,37 @@ contract Vault is ERC4626 {
         Interacts with EigenLayer DelegationManager
         Check out 
     */
-    function _undelegateFromEigenLayerOperator(address operator, uint256 amount) private {
-        DelegationManager delegationManager = eigenLayerContracts.delegationManager();
-        //TODO: undelegate just a part of the staked tokens
-        // Call the undelegate function
-        delegationManager.undelegate(address(this));
+    function _withdrawFromEigenLayer(uint256 share) private {
+        address operator = delegationManager.delegatedTo(address(this));
+        address withdrawer = address(this);
+        uint nonce = delegationManager.cumulativeWithdrawalsQueued(address(this));
+
+        IStrategy[] memory strategies = new IStrategy[](1);
+        strategies[0] = strategy;
+
+        uint[] memory shares = new uint[](1);
+        shares[0] = share;
+
+        // Create queueWithdrawals params
+        IDelegationManager.QueuedWithdrawalParams[] memory params = new IDelegationManager.QueuedWithdrawalParams[](1);
+        params[0] = IDelegationManager.QueuedWithdrawalParams({
+            strategies: strategies,
+            shares: shares,
+            withdrawer: withdrawer
+        });
+
+        // Create Withdrawal struct using same info
+        IDelegationManager.Withdrawal[] memory withdrawals = new IDelegationManager.Withdrawal[](1);
+        withdrawals[0] = IDelegationManager.Withdrawal({
+            staker: address(this),
+            delegatedTo: operator,
+            withdrawer: withdrawer,
+            nonce: nonce,
+            startBlock: uint32(block.number),
+            strategies: strategies,
+            shares: shares
+        });
+
+        delegationManager.queueWithdrawals(params);
     }
 }

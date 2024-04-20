@@ -9,10 +9,10 @@ import "../src/Vault.sol";
 import "@openzeppelin/contracts/interfaces/IERC4626.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-import {Vault, IEgeneLayerConstracts} from "../src/Vault.sol";
+import {Vault, IEigenLayerContracts} from "../src/Vault.sol";
 import "../test/TestCoin.sol";
 import {HoldingsManager} from "../src/HoldingsManager.sol";
-import {IEgeneLayerConstracts, TestnetContracts} from "../src/EigenLayerContracts.sol";
+import {IEigenLayerContracts, TestnetContracts} from "../src/EigenLayerContracts.sol";
 
 
 contract VaultScript is Script {
@@ -28,7 +28,7 @@ contract VaultScript is Script {
         // ETHx @ Honesky: https://holesky.etherscan.io/token/
         ERC20 liquidStakedToken = ERC20(address(0xB4F5fc289a778B80392b86fa70A7111E5bE0F859));
 
-        IEgeneLayerConstracts elContracts = new TestnetContracts();
+        IEigenLayerContracts elContracts = new TestnetContracts();
         HoldingsManager holdingsManager = new HoldingsManager(address(msg.sender));
         // Coinbase Operator: https://holesky.etherscan.io/address/0xbe4b4fa92b6767fda2c8d1db53a286834db19638
         holdingsManager.setOperator(address(0xbE4B4Fa92b6767FDa2C8D1db53A286834dB19638), 100000);
