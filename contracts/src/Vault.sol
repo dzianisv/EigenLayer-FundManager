@@ -35,7 +35,7 @@ contract Vault is ERC4626 {
         ERC4626(_underlyingAsset)
         ERC20(
             string(abi.encodePacked("Vault for ", _underlyingAsset.name())),
-            string(abi.encodePacked("cb", _underlyingAsset.symbol()))
+            string(abi.encodePacked(_underlyingAsset.symbol(), "Shares"))
         )
     {
         holdingsManager = _holdingsManager;
