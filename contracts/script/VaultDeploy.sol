@@ -3,18 +3,18 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import {Script, console2} from "forge-std/Script.sol";
-import "../src/Vault.sol";
-
 import "@openzeppelin/contracts/interfaces/IERC4626.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import {AddressLibrary} from "./AddressLibrary.sol";
 
-import {Vault} from "../src/Vault.sol";
+import {Script, console2} from "forge-std/Script.sol";
+
+import "./AddressLibrary.sol";
+import "./ContractsStore.sol";
+
+import "../src/Vault.sol";
 import "../test/TestCoin.sol";
-import {HoldingsManager} from "../src/HoldingsManager.sol";
-import {IEigenLayerContracts, TestnetContracts} from "../src/EigenLayerContracts.sol";
-import {MyOperator} from "../src/MyOperator.sol";
+import "../src/HoldingsManager.sol";
+import "../src/EigenLayerContracts.sol";
+import "../src/MyOperator.sol";
 
 
 contract DeployVault is Script {
@@ -26,12 +26,10 @@ contract DeployVault is Script {
     function run() public {
         // uint256 privateKey = vm.envUint("PRIVATE_KEY");
         // vm.startBroadcast(privateKey);
-
-        // IERC20 rewardsToken = IERC20(vm.envAddress("REWARDS_TOKEN_ADDRESS"))
         
         // ETHx @ Honesky: https://holesky.etherscan.io/token/
         ERC20 liquidStakedToken = ERC20(address(0xB4F5fc289a778B80392b86fa70A7111E5bE0F859));
-        IEigenLayerContracts elContracts = IEigenLayerContracts(vm.readFile(".data/EigenLayerContracts.txt").toAddress());
+        IEigenLayerContracts elContracts = ContractsStore.getEigenLayerContracts(vm);
         
         vm.startBroadcast();
         HoldingsManager holdingsManager = new HoldingsManager(address(msg.sender));

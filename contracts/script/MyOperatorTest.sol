@@ -3,29 +3,28 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import {Script, console2} from "forge-std/Script.sol";
-import "../src/Vault.sol";
-
 import "@openzeppelin/contracts/interfaces/IERC4626.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-import {Vault} from "../src/Vault.sol";
+import {Script, console2} from "forge-std/Script.sol";
+
+import "./ContractsStore.sol";
+import"../src/Vault.sol";
 import "../test/TestCoin.sol";
-import {HoldingsManager} from "../src/HoldingsManager.sol";
-import {IEigenLayerContracts, TestnetContracts} from "../src/EigenLayerContracts.sol";
-import {MyOperator} from "../src/MyOperator.sol";
+import "../src/HoldingsManager.sol";
+import "../src/EigenLayerContracts.sol";
+import "../src/MyOperator.sol";
 
 
 contract TestMyOperator is Script {
     function setUp() public {}
 
     function run() public {
-        IEigenLayerContracts eigenLayerContracts = IEigenLayerContracts(vm.envAddress("EIGEN_LAYER_CONTRACTS_ADDRESS"));
+        IEigenLayerContracts eigenLayerContracts = ContractsStore.getEigenLayerContracts(vm);
 
-        ERC20 liquidStakedToken = ERC20(address(0xB4F5fc289a778B80392b86fa70A7111E5bE0F859));
+        ERC20 liquidStakedToken = ContractsStore.getETHxToken(vm);
         console2.log(liquidStakedToken.symbol(), liquidStakedToken.balanceOf(msg.sender));
 
-        MyOperator mOperator = MyOperator(vm.envAddress("MY_OPERATOR_ADDRESS"));
+        MyOperator mOperator = ContractsStore.getMyOperator(vm);
 
         vm.startBroadcast();
         liquidStakedToken.approve(address(mOperator), 1);

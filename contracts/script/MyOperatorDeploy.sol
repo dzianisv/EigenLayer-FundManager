@@ -3,22 +3,21 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import {Script, console2} from "forge-std/Script.sol";
-import "../src/Vault.sol";
-
 import "@openzeppelin/contracts/interfaces/IERC4626.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-import {Vault} from "../src/Vault.sol";
-import "../test/TestCoin.sol";
-import {HoldingsManager} from "../src/HoldingsManager.sol";
-import {IEigenLayerContracts, TestnetContracts} from "../src/EigenLayerContracts.sol";
-import {MyOperator} from "../src/MyOperator.sol";
+import {Script, console2} from "forge-std/Script.sol";
+
 import "./AddressLibrary.sol";
+
+import "../src/Vault.sol";
+import "../test/TestCoin.sol";
+import "../src/HoldingsManager.sol";
+import "../src/EigenLayerContracts.sol";
+import "../src/MyOperator.sol";
 
 contract DeployTestOperator is Script {
     using AddressLibrary for address;
-    
+
     function setUp() public {}
 
     function run() public {
