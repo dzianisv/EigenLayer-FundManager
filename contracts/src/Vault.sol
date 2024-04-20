@@ -74,9 +74,10 @@ contract Vault is ERC4626 {
         return super.mint(shares, receiver);
     }
 
-    function _stake(MyOperator operator, uint256 amount) private {
-        transfer(address(operator), amount);
-        operator.stake(ERC20(asset()), amount, eigenLayerContracts);
+    function _stake(MyOperator myOperator, uint256 amount) private {
+        ERC20 asset = ERC20(asset());
+        asset.approve(address(myOperator), amount);
+        myOperator.stake(asset, amount, eigenLayerContracts);
     }
 
     function _unstake(MyOperator operator, uint256 amount) private {

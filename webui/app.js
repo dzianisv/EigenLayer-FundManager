@@ -1,6 +1,6 @@
 const networks = {
     31337: {name: "localnet", contract: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"},
-    17000: {name: "Holesky", contract: "0xB9a469cC3349e3FFd53D007c7669609cA83b5Fc1", explorer: "https://holesky.etherscan.io/address"},
+    17000: {name: "Holesky", contract: "0x4b14f428A70D4E6674354BdB0E322eAD1f3548DB", explorer: "https://holesky.etherscan.io/address"},
 };
 
 const txOptions = {
