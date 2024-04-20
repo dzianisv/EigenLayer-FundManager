@@ -9,7 +9,7 @@ import "../src/Vault.sol";
 import "@openzeppelin/contracts/interfaces/IERC4626.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-import {Vault, IEigenLayerContracts} from "../src/Vault.sol";
+import {Vault} from "../src/Vault.sol";
 import "../test/TestCoin.sol";
 import {HoldingsManager} from "../src/HoldingsManager.sol";
 import {IEigenLayerContracts, TestnetContracts} from "../src/EigenLayerContracts.sol";
