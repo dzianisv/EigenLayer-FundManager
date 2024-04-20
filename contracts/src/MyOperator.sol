@@ -15,7 +15,7 @@ contract MyOperator {
     address public operatorAddress;
 
     constructor(address _operator) {
-        this.operatorAddress = _operator;
+        operatorAddress = _operator;
     }
 
     function stake(
@@ -23,11 +23,11 @@ contract MyOperator {
         IERC20Metadata token,
         IEigenLayerContracts eigenLayerContracts
     ) public {
-        token.transferFrom(msg.sender, address(this));
+        token.transferFrom(msg.sender, address(this), amount);
 
         DelegationManager delegationManager = eigenLayerContracts.delegationManager();
         StrategyManager strategyManager = eigenLayerContracts.strategyManager();
-        IStrategy strategy = eigenLayerContracts.getStrategy(token);
+        IStrategy strategy = eigenLayerContracts.strategy(token.symbol());
 
         IERC20 underlyingToken = strategy.underlyingToken();
         require(address(token) == address(underlyingToken), "EigenLayer IStrategy doesn't match to the token");
