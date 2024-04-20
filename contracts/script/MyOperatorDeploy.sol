@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/interfaces/IERC4626.sol";
 import {Script, console2} from "forge-std/Script.sol";
 
 import "./AddressLibrary.sol";
-
+import "./ContractsStore.sol";
 import "../src/Vault.sol";
 import "../test/TestCoin.sol";
 import "../src/HoldingsManager.sol";
@@ -21,12 +21,11 @@ contract DeployTestOperator is Script {
     function setUp() public {}
 
     function run() public {
-        IEigenLayerContracts eigenLayerContracts = IEigenLayerContracts(vm.envAddress("EIGEN_LAYER_CONTRACTS_ADDRESS"));
-        ERC20 liquidStakedToken = ERC20(address(0xB4F5fc289a778B80392b86fa70A7111E5bE0F859));
+        IEigenLayerContracts eigenLayerContracts = ContractsStore.getEigenLayerContracts(vm);
+        ERC20 liquidStakedToken = ContractsStore.getETHxToken(vm);
 
         vm.startBroadcast();
-        // Coinbase Operator: https://holesky.etherscan.io/address/0xbe4b4fa92b6767fda2c8d1db53a286834db19638
-        MyOperator mOperator = new MyOperator(address(0xbE4B4Fa92b6767FDa2C8D1db53A286834dB19638));
+        MyOperator mOperator = new MyOperator(ContractsStore.getOperatorAddress(vm));
         vm.stopBroadcast();
 
         vm.writeFile('.data/MyOperator.txt', address(mOperator).toHexString());
