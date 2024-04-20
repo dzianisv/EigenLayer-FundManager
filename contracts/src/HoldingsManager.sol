@@ -14,7 +14,7 @@ contract HoldingsManager is AccessControlEnumerable {
 
     // Mapping of operators to their stake in basis points
     using EnumerableMap for EnumerableMap.AddressToUintMap;
-    EnumerableMap.AddressToUintMap private _operatorStakes;  // Target Portfolio holdings map: OperatorAddress:TargetStakeInBps
+    EnumerableMap.AddressToUintMap private _operatorStakes;  // Target Portfolio holdings map: MyOperatorAddress:TargetStakeInBps
 
     constructor(address admin) {
         // The deploying user sets the admin and initial manager
@@ -27,26 +27,26 @@ contract HoldingsManager is AccessControlEnumerable {
     // Add a manager -> grantRole(MANAGER_ROLE, address)
     // Remove a manager -> revokeRole(MANAGER_RILE, address)
 
-    // Set or update an operator's stake
-    function setOperator(address operator, uint256 stake_bps) public onlyRole(MANAGER_ROLE) {
+    // Set or update an MyOperator's stake
+    function setOperator(address operator, uint256 stake_bps) external onlyRole(MANAGER_ROLE) {
         require(operator != address(0), "Invalid operator address");
         _operatorStakes.set(operator, stake_bps);
     }
 
-    function removeOperator(address operator) public onlyRole(MANAGER_ROLE){
+    function removeOperator(address operator) external onlyRole(MANAGER_ROLE){
         require(operator != address(0), "Invalid operator address");
         _operatorStakes.remove(operator);
     }
 
-    function getOperatorStake(address operator) public view returns (uint256) {
+    function getOperatorStake(address operator) external view returns (uint256) {
         return _operatorStakes.get(operator);
     }
 
-    function existsOperator(address operator) public view returns (bool) {
+    function existsOperator(address operator) external view returns (bool) {
         return _operatorStakes.contains(operator);
     }
 
-    function numberOfOperators() public view returns (uint256) {
+    function numberOfOperators() external view returns (uint256) {
         return _operatorStakes.length();
     }
 

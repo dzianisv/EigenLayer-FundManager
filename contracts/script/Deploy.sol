@@ -13,6 +13,7 @@ import {Vault} from "../src/Vault.sol";
 import "../test/TestCoin.sol";
 import {HoldingsManager} from "../src/HoldingsManager.sol";
 import {IEigenLayerContracts, TestnetContracts} from "../src/EigenLayerContracts.sol";
+import {MyOperator} from "../src/MyOperator.sol";
 
 
 contract VaultScript is Script {
@@ -32,9 +33,12 @@ contract VaultScript is Script {
 
         IEigenLayerContracts elContracts = new TestnetContracts();
         HoldingsManager holdingsManager = new HoldingsManager(address(msg.sender));
+        
+        Vault vault = new Vault(liquidStakedToken, holdingsManager);
         // Coinbase Operator: https://holesky.etherscan.io/address/0xbe4b4fa92b6767fda2c8d1db53a286834db19638
-        holdingsManager.setOperator(address(0xbE4B4Fa92b6767FDa2C8D1db53A286834dB19638), 100000);
-        Vault vault = new Vault(liquidStakedToken, elContracts, holdingsManager);
+        MyOperator cbOperator = new MyOperator(address(0xbE4B4Fa92b6767FDa2C8D1db53A286834dB19638), vault, elContracts);
+
+        holdingsManager.setOperator(address(cbOperator), 100000);
 
         vm.stopBroadcast();
     }
