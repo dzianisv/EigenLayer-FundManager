@@ -3,7 +3,7 @@ src = "src"
 out = "out"
 test = "test"
 libs = ["lib"]
-fs_permissions = [{ access = "read", path = "./" }]
+fs_permissions = [{ access = "read", path = "./" }, { access = "write", path = "./.data" }]
 solc = "0.8.12"
 evm_version = 'cancun'
 

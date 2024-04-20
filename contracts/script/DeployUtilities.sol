@@ -14,26 +14,35 @@ import "../test/TestCoin.sol";
 import {HoldingsManager} from "../src/HoldingsManager.sol";
 import {IEigenLayerContracts, TestnetContracts} from "../src/EigenLayerContracts.sol";
 import {MyOperator} from "../src/MyOperator.sol";
+import "./AddressLibrary.sol";
 
 contract DeployRewardsToken is Script {
+    using AddressLibrary for address;
+
     function setUp() public {}
 
     function run() public {
         vm.startBroadcast();
         TestCoin rewardsToken = new TestCoin("AVS1 Rewards Token", "AVS1");
         rewardsToken.mint(msg.sender, 100);
-        console2.log("Rewards token address", address(rewardsToken));
         vm.stopBroadcast();
+
+        console2.log("Rewards token address", address(rewardsToken));
+        vm.writeFile('.data/RewardsToken.txt', address(rewardsToken).toHexString());
     }
 }
 
 contract DeployEingenLayerContracts is Script {
+    using AddressLibrary for address;
+    
     function setUp() public {}
 
     function run() public {
         vm.startBroadcast();
         IEigenLayerContracts elContracts = new TestnetContracts();
-        console2.log("EingenLayerContracts address", address(elContracts));
         vm.stopBroadcast();
+
+        console2.log("EingenLayerContracts address", address(elContracts));
+        vm.writeFile('.data/IEigenLayerContracts.txt', address(elContracts).toHexString());
     }
 }
