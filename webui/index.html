@@ -103,12 +103,29 @@
         <div class="col s6 m6">
             <div class="card">
                 <div class="card-content">
-                    <span class="card-title"><i class="material-icons">account_balance</i>Investments controll
+                    <span class="card-title"><i class="material-icons">account_balance</i>Staking
                     </span>
+
+
                     <div class="mt-3">
                         <label>Amount:</label>
                         <input type="text" id="amountInput" class="form-control">
                     </div>
+                    <div class="mt-3">
+                        <label>Token:</label>
+                        <input type="text" id="amountInput" value="rETH" class="form-control">
+                    </div>
+                    
+                    <!-- <div class="row mt-3 input-field form-control">
+                        <select>
+                            <option value="ETH">ETH</option>
+                            <option value="rETHT">rETH</option>
+                            <option value="ETHx">ETHx</option>
+                            <option value="cbETH">cbETH</option>
+                        </select>
+                        <label>Choose token</label>
+                    </div> -->
+
                 </div>
                 <div class="card-action">
                     <div class="row">
@@ -125,12 +142,12 @@
                             </button>
                         </div>
 
-                        <div class="col s4">
+                        <!-- <div class="col s4">
                             <button id="redeemBtn" class="btn waves-effect waves-light">
                                 <i class="material-icons left">redeem</i>
                                 Redeem Shares
                             </button>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>
@@ -139,26 +156,26 @@
         <div class="col s6 m6">
             <div class="card">
                 <div class="card-content">
-                    <span class="card-title"><i class="material-icons">account_balance</i>Vaults manager
+                    <span class="card-title"><i class="material-icons">account_balance</i>Operators manager
                     </span>
                     <div class="mt-3">
-                        <label>Vault Address:</label>
+                        <label>Operator Address:</label>
                         <input type="text" id="address" class="form-control">
+                    </div>
+                    <div class="mt-3">
+                        <label>Stake (%):</label>
+                        <input type="text" id="stake" class="form-control">
                     </div>
                 </div>
                 <div class="card-action">
                     <div class="row">
 
-                        <div class="col s4"><button id="addVault" class="btn waves-effect waves-light">
+                        <div class="col s4"><button id="addOperator" class="btn waves-effect waves-light">
                                 <i class="material-icons left">add</i>Add</button></div>
 
-                        <div class="col s4"><button id="removeVault" class="btn waves-effect waves-light">
+                        <div class="col s4"><button id="removeOperator" class="btn waves-effect waves-light">
                                 <i class="material-icons left">remove</i>Remove</button></div>
 
-                        <div class="col s4"><button id="reinvestBtn" class="btn waves-effect waves-light">
-                                <i class="material-icons left">autorenew</i>
-                                Reinvest
-                            </button></div>
                     </div>
                 </div>
             </div>
@@ -275,6 +292,13 @@
     </script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var elems = document.querySelectorAll('select');
+            var instances = M.FormSelect.init(elems, options);
+        });
+    </script>
 </body>
 
 </html>

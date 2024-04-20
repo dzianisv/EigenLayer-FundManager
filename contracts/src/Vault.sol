@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 
 import "./HoldingsManager.sol";
-import {IEigenLayerContracts} from "./EigenLayerContracts.sol";
+
 
 
 contract Vault is ERC4626 {

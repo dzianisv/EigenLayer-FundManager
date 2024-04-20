@@ -1,6 +1,6 @@
 const networks = {
     31337: {name: "localnet", contract: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"},
-    1700: {name: "Holesky", contract: "0xb44a07d022c5c6f6c80dbcd8fdb3a56c24102999", explorer: "https://holesky.etherscan.io/address"},
+    17000: {name: "Holesky", contract: "0xb44a07d022c5c6f6c80dbcd8fdb3a56c24102999", explorer: "https://holesky.etherscan.io/address"},
 };
 
 const txOptions = {
@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const network = networks[chainId];
     if (!network) {
-        alert("This network is not supported");
+        alert(`${chainId} network is not supported`);
         return;
     }
 
