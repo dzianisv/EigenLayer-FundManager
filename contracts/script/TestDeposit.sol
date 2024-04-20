@@ -64,8 +64,8 @@ contract TestMyOperator is Script {
         MyOperator mOperator = MyOperator(vm.envAddress("MY_OPERATOR_ADDRESS"));
 
         vm.startBroadcast();
-        liquidStakedToken.approve(address(mOperator), 10);
-        mOperator.stake(liquidStakedToken, 10, eigenLayerContracts);
+        liquidStakedToken.approve(address(mOperator), 1);
+        mOperator.stake(liquidStakedToken, 1, eigenLayerContracts);
         vm.stopBroadcast();
     }
 }
