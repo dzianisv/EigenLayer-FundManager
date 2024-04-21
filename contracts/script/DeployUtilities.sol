@@ -16,22 +16,6 @@ import {IEigenLayerContracts, TestnetContracts} from "../src/EigenLayerContracts
 import {MyOperator} from "../src/MyOperator.sol";
 import "./AddressLibrary.sol";
 
-contract DeployRewardsToken is Script {
-    using AddressLibrary for address;
-
-    function setUp() public {}
-
-    function run() public {
-        vm.startBroadcast();
-        MintableToken rewardsToken = new MintableToken("AVS1 Rewards Token", "AVS1");
-        rewardsToken.mint(msg.sender, 100);
-        vm.stopBroadcast();
-
-        console2.log("Rewards token address", address(rewardsToken));
-        vm.writeFile('.data/RewardsToken.txt', address(rewardsToken).toHexString());
-    }
-}
-
 contract DeployEingenLayerContracts is Script {
     using AddressLibrary for address;
 
@@ -44,5 +28,35 @@ contract DeployEingenLayerContracts is Script {
 
         console2.log("EingenLayerContracts address", address(elContracts));
         vm.writeFile('.data/IEigenLayerContracts.txt', address(elContracts).toHexString());
+    }
+}
+contract DeployRewardsToken is Script {
+    using AddressLibrary for address;
+
+    function setUp() public {}
+
+    function run() public {
+        vm.startBroadcast();
+        MintableToken token = new MintableToken("EigenLayer Rewards Coin", "AVS1");
+        token.mint(msg.sender, 100);
+        vm.stopBroadcast();
+
+        console2.log("Contract address", address(token));
+        vm.writeFile('.data/RewardsToken.txt', address(token).toHexString());
+    }
+}
+
+contract DeployUSDC is Script {
+    using AddressLibrary for address;
+
+    function setUp() public {}
+
+    function run() public {
+        vm.startBroadcast();
+        MintableToken token = new MintableToken("USD Coin", "USDC");
+        vm.stopBroadcast();
+
+        console2.log("Contract address", address(token));
+        vm.writeFile('.data/USDC.txt', address(token).toHexString());
     }
 }

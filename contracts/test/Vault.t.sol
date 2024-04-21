@@ -25,7 +25,7 @@ contract AssetManagerTest is Test {
         liquidStakedToken = new MintableToken("Liquid Staked ETH", "lsETH");
         liquidStakedToken.mint(msg.sender, 100);
 
-        IEigenLayerContracts elContracts = new TestnetContracts();
+        IEigenLayerContracts elContracts = new TestContracts(rewardsToken);
         HoldingsManager holdingsManager = new HoldingsManager(address(msg.sender), elContracts);
         vault = new Vault(liquidStakedToken, holdingsManager, elContracts);
     }
@@ -73,16 +73,15 @@ contract AssetManagerTest is Test {
             holdingManager.setOperator(address(uint160((0x1 * (i+1)))), 100 * (i+1));
         }
 
-        
-
         OperatorInfo[] memory operators = holdingManager.getOperatorsInfo();
         for (uint i = 0; i  < operators.length; i++) {
             uint256 rewardsAmount = 100 * (i+1);
             OperatorInfo memory operator = operators[i];
             MyOperator staker = MyOperator(operator.staker);
-            
+            console2.log("Working with staker", address(staker));
+
             // yeild rewards on the OperatorStaker contract
-            rewardsToken.transfer(operator.staker, rewardsAmount);
+            rewardsToken.mint(operator.staker, rewardsAmount);
             // get the rewards tokens count on the Vault contract
             uint256 vaultRewardsBalance = rewardsToken.balanceOf(address(vault));
             // get the amount of the rewards tokens on the balance of the OperatorStaker contract

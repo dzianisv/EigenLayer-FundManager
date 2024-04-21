@@ -10,12 +10,11 @@ interface IEigenLayerContracts {
     function delegationManager() external view returns (DelegationManager);
     function strategyManager() external view returns (StrategyManager);
     function strategy(string memory tokenSymbol) external view returns (IStrategy);
-    function rewardsToken() external pure returns (ERC20);
+    function rewardsToken() external view returns (ERC20);
 }
 
 // Testnet deployments https://github.com/Layr-Labs/eigenlayer-contracts?tab=readme-ov-file#current-testnet-deployment
 contract TestnetContracts is IEigenLayerContracts {
-
     function delegationManager() external pure returns (DelegationManager) {
         return DelegationManager(address(0xA44151489861Fe9e3055d95adC98FbD462B948e7));
     }
@@ -58,3 +57,19 @@ contract TestnetContracts is IEigenLayerContracts {
         return ERC20(address(0x154CA694527015D5DcdDE539A8827bAe1F47A78C));
     }
 }
+
+// Testnet deployments https://github.com/Layr-Labs/eigenlayer-contracts?tab=readme-ov-file#current-testnet-deployment
+contract TestContracts is IEigenLayerContracts {
+    ERC20 public rewardsToken;
+    DelegationManager public delegationManager;
+    StrategyManager public strategyManager;
+
+    constructor(ERC20 _rewardsToken) {
+        rewardsToken = _rewardsToken;
+    }
+
+    function strategy(string memory /* tokenSymbol */) external pure returns (IStrategy) {
+        return IStrategy(address(0x0));
+    }
+}
+
