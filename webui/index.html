@@ -249,7 +249,7 @@
             <thead>
                 <tr>
                     <th>Name</th>
-                    <th>Symbol</th>
+                    <th>Address</th>
                     <th>Our Shares</th>
                     <th>Total Shares</th>
                     <th>Total Assets locked</th>
@@ -271,8 +271,8 @@
             for (const item of items) {
                 // Add a row to the table
                 const row = `<tr>
-                <td>${item.name}</td>
-                <td>${item.symbol}</td>
+                <td><a href="${item.url}"><img src="${item.logo}" height=48 width=48 style="margin-bottom: -10;" />${item.name}</td>
+                <td><a href="https://holesky.etherscan.io/address/${item.address}">${item.address}</a></td>
                 <td>${ethers.utils.formatEther(item.vaultOurShares)}</td>
                 <td>${ethers.utils.formatEther(item.vaultTotalShares)}</td>
                 <td>${ethers.utils.formatEther(item.vaultTotalAssets)}</td>

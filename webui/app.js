@@ -1,6 +1,6 @@
 const networks = {
     31337: {name: "localnet", contract: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"},
-    17000: {name: "Holesky", contract: "0x16a08ec6ec14e17c97bbe0bbd4fb9d82f719928a", explorer: "https://holesky.etherscan.io/address"},
+    17000: {name: "Holesky", contract: "0x0d1fee466b57524e1d26f385e881fb737664c9c2", explorer: "https://holesky.etherscan.io/address"},
 };
 
 const txOptions = {
@@ -12,6 +12,7 @@ const ERC4626_ABI = [
     "function withdraw(uint256 assets, address receiver, address owner) external returns (uint256 shares)",
     "function deposit(uint256 assets, address receiver) external returns (uint256 shares)",
     "function totalAssets() external view returns (uint256 totalManagedAssets)",
+    "function totalDeposited() public view returns (uint256)",
     "function asset() external view returns (address assetTokenAddress)",
     "function totalSupply() external view returns (uint256)",
     "function balanceOf(address account) external view returns (uint256)",
@@ -110,6 +111,7 @@ async function disconnectWallet() {
 
 document.addEventListener('DOMContentLoaded', async () => {
     const provider = await connectWallet();
+
 
     provider.on("network", (newNetwork, oldNetwork) => {
         console.log("Switching from ", oldNetwork, "to", newNetwork);
@@ -227,28 +229,42 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         let items = [];
 
-        const holdingsManagerContract = new ethers.Contract(await vaultContract.holdingsManager(), HodlingsManager_ABI, signer);
+        const holdingsManagerContract = new ethers.Contract(await vaultContract.holdingsManager(), HoldingsManager_ABI, signer);
         const operators = await holdingsManagerContract.getOperatorsInfo();
         for (let operator of operators) {
             console.log(operator);
- 
-            // Fetch the necessary data
-            const name = "";
-            const symbol = "";
-            const vaultTotalShares = 0.001;
-            const vaultTotalAssets = 0.001;
+
+            const address = operator.operator;
+            
+       
+            let metadata = {name: "", logo: "", description: "", website: ""};
+            const metadataUrl = operatorsMetadata[chainId][address] ? operatorsMetadata[chainId][address].metadata : null;
+            if (metadataUrl) {
+                try { 
+                    metadata = await (await fetch(metadataUrl)).json();
+                    console.log(address, metadata);
+                } catch(err) {
+                    console.error(`failed to retrieve oeprator ${address} on chainId=${chainId} metadata`, err);
+                }
+            }
+            
+            const totalDeposited = await vaultContract.totalDeposited();
+
+            const vaultTotalShares = await vaultContract.totalAssets();
+            const vaultTotalAssets = await vaultContract.totalSupply();
             const vaultSharePrice = vaultTotalAssets / vaultTotalShares;
 
-            const vaultOurShares = 0.001;
-            const vaultOurAssets = 0.001;
-
+            const vaultOurShares = await vaultContract.balanceOf(walletAddress);
+            const vaultOurAssets = vaultOurShares * vaultSharePrice;
+            const perfomanceIndex = 0;
+            
             let holdingPercentage = 0;
-            if (totalAssets > 0) {
-                holdingPercentage = (vaultOurAssets / totalAssets) * 100;
+            if (totalDeposited > 0) {
+                holdingPercentage = (vaultOurAssets / totalDeposited) * 100;
             }
 
             items.push({
-                name, symbol, vaultTotalShares, vaultTotalAssets, vaultSharePrice, vaultOurShares, vaultOurAssets,  holdingPercentage, perfomanceIndex
+                ...metadata, address, vaultTotalShares, vaultTotalAssets, vaultSharePrice, vaultOurShares, vaultOurAssets,  holdingPercentage, perfomanceIndex
             });
         }
         updateHoldings(items);
