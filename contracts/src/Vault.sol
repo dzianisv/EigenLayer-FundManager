@@ -9,9 +9,10 @@ import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 
 import "eigenlayer-contracts/src/contracts/interfaces/IStrategy.sol";
 
-import {IEigenLayerContracts} from "./EigenLayerContracts.sol";
+import "./EigenLayerContracts.sol";
 import "./HoldingsManager.sol";
 import "./MyOperator.sol";
+
 
 struct OperatorAllocation {
     address staker;
@@ -23,7 +24,8 @@ struct OperatorAllocation {
 contract Vault is ERC4626 {
     // Assuming HoldingsManager is defined elsewhere in your project
     HoldingsManager public holdingsManager;
-    IEigenLayerContracts public eigenLayerContracts;
+    IEigenLayerContracts public contractsStore;
+
 
     using EnumerableMap for EnumerableMap.AddressToUintMap;
 
@@ -35,7 +37,7 @@ contract Vault is ERC4626 {
     constructor(
         IERC20Metadata _underlyingAsset,
         HoldingsManager _holdingsManager,
-        IEigenLayerContracts _eigenLayerContracts
+        IEigenLayerContracts _contractsStore
     )
         ERC4626(_underlyingAsset)
         ERC20(
@@ -44,7 +46,7 @@ contract Vault is ERC4626 {
         )
     {
         holdingsManager = _holdingsManager;
-        eigenLayerContracts = _eigenLayerContracts;
+        contractsStore = _contractsStore;
     }
 
     function availableForTradeAssets() public view returns (uint256) {
@@ -197,4 +199,31 @@ contract Vault is ERC4626 {
         }
         return 0; // Return 0 if the operator is not found in the target distribution
     }
+
+    /**
+        One of the key functions that harvest rewards, swap back them to liqud-staked tokens and reinvest (re-restake) into EigenLayer operators
+     */
+    function claimAndReinvest() external returns (uint256) {
+        OperatorInfo[] memory operators = holdingsManager.getOperatorsInfo();
+        uint256 reinvested = 0;
+
+        // iterate over operators and harvest rewards
+        for (uint i = 0; i  < operators.length; i++) {
+            OperatorInfo memory operator = operators[i];
+            MyOperator staker = MyOperator(operator.staker);
+            
+            uint256 rewardsAvailable = staker.rewardAvailable();
+            // ✅ harvest reward tokens from the StakerOperator contract
+            staker.rewardsClaim(address(this), rewardsAvailable);
+
+            // ✅ swap rewards token to the liqudity token and restake it again!
+            ERC20 rewardsToken = staker.rewardsAsset();
+            reinvested += contractsStore.exchange().swap(address(this), address(this), staker.rewardsAsset(), ERC20(asset()), rewardsToken.balanceOf(address(this)));
+        }
+
+        _redistribute();
+        return reinvested;
+    }
+
+
 }

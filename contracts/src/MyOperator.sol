@@ -129,4 +129,8 @@ contract MyOperator {
     function rewardAvailable() public view returns (uint256) {
         return eigenLayerContracts.rewardsToken().balanceOf(address(this));
     }
+
+    function rewardsAsset() public view returns (ERC20) {
+        return eigenLayerContracts.rewardsToken();
+    }
 }

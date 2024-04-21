@@ -5,16 +5,20 @@ import "eigenlayer-contracts/src/contracts/core/DelegationManager.sol";
 import "eigenlayer-contracts/src/contracts/core/StrategyManager.sol";
 import "eigenlayer-contracts/src/contracts/interfaces/IStrategy.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "./Exchange.sol";
 
 interface IEigenLayerContracts {
     function delegationManager() external view returns (DelegationManager);
     function strategyManager() external view returns (StrategyManager);
     function strategy(string memory tokenSymbol) external view returns (IStrategy);
     function rewardsToken() external view returns (ERC20);
+    function exchange() external view returns (IExchange);
 }
 
 // Testnet deployments https://github.com/Layr-Labs/eigenlayer-contracts?tab=readme-ov-file#current-testnet-deployment
 contract TestnetContracts is IEigenLayerContracts {
+    IExchange public exchange;
+
     function delegationManager() external pure returns (DelegationManager) {
         return DelegationManager(address(0xA44151489861Fe9e3055d95adC98FbD462B948e7));
     }
@@ -63,6 +67,7 @@ contract TestContracts is IEigenLayerContracts {
     ERC20 public rewardsToken;
     DelegationManager public delegationManager;
     StrategyManager public strategyManager;
+    IExchange public exchange;
 
     constructor(ERC20 _rewardsToken) {
         rewardsToken = _rewardsToken;
