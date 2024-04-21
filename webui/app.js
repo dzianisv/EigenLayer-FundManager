@@ -1,6 +1,6 @@
 const networks = {
     31337: {name: "localnet", contract: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"},
-    17000: {name: "Holesky", contract: "0x4b14f428A70D4E6674354BdB0E322eAD1f3548DB", explorer: "https://holesky.etherscan.io/address"},
+    17000: {name: "Holesky", contract: "0x1A75E43149A18CFfacA68b86e45df3E47A300149", explorer: "https://holesky.etherscan.io/address"},
 };
 
 const txOptions = {
@@ -145,12 +145,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             {
                 console.log("Approve", amount);
                 let tx = await assetTokenContract.approve(contractAddress, amount);
+                console.log("Watingin for the transactoin", tx);
                 console.log("Approved", await tx.wait());
             }
 
             {
                 console.log("Deposit", amount, assetSymbol);
                 const tx = await vaultContract.deposit(amount, await signer.getAddress());
+                console.log("Watingin for the transactoin", tx);
                 console.log("Deposited", await tx.wait());
             }
 

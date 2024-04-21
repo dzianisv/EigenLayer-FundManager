@@ -25,7 +25,7 @@ contract TestDeposit is Script {
 
         // ETHx
         ERC20 liquidStakedToken = ContractsStore.getETHxToken(vm);
-        uint256 testDeposit = 100;
+        uint256 testDeposit = 1;
 
         console2.log("pre-msg.sender", msg.sender);
         console2.log("pre-liquidStakedToken.balanceOf()", liquidStakedToken.balanceOf(msg.sender));

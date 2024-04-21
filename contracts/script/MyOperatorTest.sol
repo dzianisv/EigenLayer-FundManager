@@ -30,7 +30,7 @@ contract TestMyOperator is Script {
         console2.log("MyOperator", address(mOperator));
 
         vm.startBroadcast();
-        liquidStakedToken.transfer(address(mOperator), amount);
+        liquidStakedToken.approve(address(mOperator), amount);
         mOperator.stake(liquidStakedToken, amount, eigenLayerContracts);
         vm.stopBroadcast();
         console2.log("Deposited", amount);
