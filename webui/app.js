@@ -32,11 +32,19 @@ const ERC20_ABI = [
 const HoldingsManager_ABI = [
     "function setOperator(address operator, uint256 stake_bps) public",
     "function removeOperator(address operator) public",
-    "function getOperatorStake(address operator) public view returns (uint256)",
+    "function getOperatorWeight(address operator) public view returns (uint256)",
     "function existsOperator(address operator) public view returns (bool)",
     "function numberOfOperators() public view returns (uint256)",
-    "function getAllOperatorStakes() public view returns (address[] memory, uint256[] memory)"
+    "function getOperatorsWeights() public view returns (address[] memory, uint256[] memory)"
 ];
+
+const operators = {
+    17000: {
+        "0xbE4B4Fa92b6767FDa2C8D1db53A286834dB19638": {
+            "metadata": "https://raw.githubusercontent.com/Layr-Labs/eigendata/master/operators/coinbasecloud/metadata.json"
+        }
+    }
+}
 
 // returns provider
 async function connectWallet() {
@@ -101,8 +109,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const vaultContract = new ethers.Contract(contractAddress, ERC4626_ABI, signer);
     const assetSymbol = await vaultContract.asset();
     const assetTokenContract = new ethers.Contract(assetSymbol, ERC20_ABI, signer);
-    // const holdingsManagerContract = new ethers.Contract(await vaultContract.holdingsManager(), HodlingsManager_ABI, signer);
+    const holdingsManagerContract = new ethers.Contract(await vaultContract.holdingsManager(), HodlingsManager_ABI, signer);
 
+    holdingsManagerContract.get
 
     // Fetch balance and display
     async function fetchShares() {

@@ -19,7 +19,7 @@ contract HoldingsManager is AccessControlEnumerable {
 
     // Mapping of operators to their stake in basis points
     using EnumerableMap for EnumerableMap.AddressToUintMap;
-    EnumerableMap.AddressToUintMap private _operatorStakes;  // Target Portfolio holdings map: MyOperatorAddress:TargetStakeInBps
+    EnumerableMap.AddressToUintMap private _operatorWeights;  // Target Portfolio holdings map: MyOperatorAddress:TargetStakeInBps
 
     constructor(address admin) {
         // The deploying user sets the admin and initial manager
@@ -42,39 +42,60 @@ contract HoldingsManager is AccessControlEnumerable {
             _operators.set(operator, uint160(address(myOperator)));
         }
 
-        _operatorStakes.set(operator, stakeBps);
+        _operatorWeights.set(operator, stakeBps);
     }
 
     function removeOperator(address operator) external onlyRole(MANAGER_ROLE){
         require(operator != address(0), "Invalid operator address");
-        _operatorStakes.remove(operator);
+        _operatorWeights.remove(operator);
         _operators.remove(operator);
     }
 
-    function getOperatorStake(address operator) external view returns (uint256) {
-        return _operatorStakes.get(operator);
+    function getOperatorWeight(address operator) external view returns (uint256) {
+        return _operatorWeights.get(operator);
     }
 
     function existsOperator(address operator) external view returns (bool) {
-        return _operatorStakes.contains(operator);
+        return _operatorWeights.contains(operator);
     }
 
     function numberOfOperators() external view returns (uint256) {
-        return _operatorStakes.length();
+        return _operatorWeights.length();
     }
 
     // Get all operators and their stakes
-    function getAllOperatorStakes() public view returns (MyOperator[] memory, uint256[] memory) {
-        uint256 length = _operatorStakes.length();
+    function getOperatorsWeights() public view returns (MyOperator[] memory, uint256[] memory) {
+        uint256 length = _operatorWeights.length();
         MyOperator[] memory operators = new MyOperator[](length);
         uint256[] memory stakes = new uint256[](length);
         
         for (uint i = 0; i < length; i++) {
-            (address operator, uint256 stake) = _operatorStakes.at(i);
+            (address operator, uint256 stake) = _operatorWeights.at(i);
             operators[i] = MyOperator(address(uint160(_operators.get(operator))));
             stakes[i] = stake;
         }
 
         return (operators, stakes);
+    }
+
+    struct OperatorInfo {
+        address operator;
+        uint256 weight;
+    }
+
+    // Get all operators and their stakes as OperatorInfo[]
+    function getOperatorsInfo() public view returns (OperatorInfo[] memory) {
+        uint256 length = _operatorWeights.length();
+        OperatorInfo[] memory operatorInfos = new OperatorInfo[](length);
+        
+        for (uint i = 0; i < length; i++) {
+            (address operator, uint256 weight) = _operatorWeights.at(i);
+            operatorInfos[i] = OperatorInfo({
+                operator: operator,
+                weight: weight
+            });
+        }
+
+        return operatorInfos;
     }
 }

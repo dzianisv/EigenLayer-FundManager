@@ -85,7 +85,7 @@ contract Vault is ERC4626 {
     }
 
     function _redistribute() private {
-        (MyOperator[] memory operators, uint256[] memory targetStakesBps) = holdingsManager.getAllOperatorStakes();
+        (MyOperator[] memory operators, uint256[] memory operatorsWeights) = holdingsManager.getOperatorsWeights();
 
         // Iterate through the portfolio to adjust or remove stakes
         for (uint i = 0; i < _stakedTokensPortfolio.length(); i++) {
@@ -113,7 +113,7 @@ contract Vault is ERC4626 {
         for (uint j = 0; j < operators.length; j++) {
             MyOperator myOperator = operators[j];
             
-            uint256 targetStake = totalDeposited() * targetStakesBps[j] / 10000;
+            uint256 targetStake = totalDeposited() * operatorsWeights[j] / 10000;
             if (!_stakedTokensPortfolio.contains(address(myOperator)) && targetStake > 0) {
                 _stake(myOperator, targetStake);
                 _stakedTokensPortfolio.set(address(myOperator), targetStake);  // Add new operator to the portfolio
@@ -123,7 +123,7 @@ contract Vault is ERC4626 {
 
     function _calculateTargetStake(address operatorAddress) private view returns (uint256) {
         if (holdingsManager.existsOperator(operatorAddress)) {
-            return totalDeposited() * holdingsManager.getOperatorStake(operatorAddress) / 10000;
+            return totalDeposited() * holdingsManager.getOperatorWeight(operatorAddress) / 10000;
         }
         return 0;  // Return 0 if the operator is not found in the target distribution
     }
