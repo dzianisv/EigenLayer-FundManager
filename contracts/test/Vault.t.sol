@@ -62,7 +62,7 @@ contract AssetManagerTest is Test {
 
         for (uint i = 0; i < 2; i++) {
             assertEq(operators[i].operator, address(uint160((0x1 * (i+1)))));
-            assertEq(operators[0].weight, 100 * i);
+            assertEq(operators[i].weight, 100 * (i+1));
         }
     }
 }
