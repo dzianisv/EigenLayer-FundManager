@@ -14,6 +14,8 @@ import "./Vault.sol";
 
 contract MyOperator {
     address public operator;
+    uint256 public rewardsClaimed;
+
     IEigenLayerContracts eigenLayerContracts;
 
     // modifier onlyVault() {
@@ -30,6 +32,7 @@ contract MyOperator {
         address _operator, 
         IEigenLayerContracts _eigenLayerContracts
     ) {
+        rewardsClaimed = 0;
         operator = _operator;
         eigenLayerContracts = _eigenLayerContracts;
     }
@@ -105,23 +108,25 @@ contract MyOperator {
     }
 
     function getRewards(uint256 deposited) public view returns (uint256) {
-        (IStrategy[] memory strategies, uint256[] memory shares) = eigenLayerContracts.delegationManager().getDelegatableShares(operator);
+        // (IStrategy[] memory strategies, uint256[] memory shares) = eigenLayerContracts.delegationManager().getDelegatableShares(operator);
 
-        uint256 amount = 0;
-        for (uint j = 0; j < strategies.length; j++) {
-            amount += strategies[j].sharesToUnderlyingView(shares[j]);
-        }
+        // uint256 amount = 0;
+        // for (uint j = 0; j < strategies.length; j++) {
+        //     amount += strategies[j].sharesToUnderlyingView(shares[j]);
+        // }
 
-        uint256 reward = 0;
-        if (amount > deposited) {
-            reward = amount - deposited;
-        }
-        return reward;
+        // uint256 reward = 0;
+        // if (amount > deposited) {
+        //     reward = amount - deposited;
+        // }
+        // return reward;
+        return rewardsClaimed;
     }
 
     //TODO: ⚠️ rewards simulation function, has to be removed in production
     function rewardsClaim(address receiver, uint256 amount) public returns (uint256) {
         eigenLayerContracts.rewardsToken().transfer(receiver, amount);
+        rewardsClaimed += amount;
         return amount;
     }
 

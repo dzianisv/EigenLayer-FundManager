@@ -44,8 +44,19 @@ contract DeployVault is Script {
         // Coinbase Operator: https://holesky.etherscan.io/address/0xbe4b4fa92b6767fda2c8d1db53a286834db19638
         holdingsManager.setOperator(
             address(0xbE4B4Fa92b6767FDa2C8D1db53A286834dB19638),
-            10000
+            6000
         );
+
+        holdingsManager.setOperator(
+            address(0x5e29b3107937b4675FdDF113EDC5530498B3Fb70),
+            2000
+        );
+        
+        holdingsManager.setOperator(
+            address(0x4E59E88207Ac04e6615D79Ae565E877DD80BCF8e),
+            2000
+        );
+
         vm.stopBroadcast();
 
         console2.log("ContractsStore address", address(elContracts));
@@ -56,6 +67,5 @@ contract DeployVault is Script {
 
         console2.log("Vault address", address(vault));
         vm.writeFile(".data/Vault.txt", address(vault).toHexString());
-        
     }
 }

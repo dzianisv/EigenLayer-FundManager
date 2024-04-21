@@ -99,9 +99,8 @@ contract Vault is ERC4626 {
         for (uint i = 0; i < length; i++) {
             (address staker, uint256 deposited) = _stakedTokensPortfolio.at(i);
             address operator = MyOperator(staker).operator();
-            uint256 rewards = MyOperator(staker).getRewards(
-                deposited
-            );
+            uint256 rewards = MyOperator(staker).rewardsClaimed();
+
             allocations[i] = OperatorAllocation({
                 staker: staker,
                 operator: operator,
