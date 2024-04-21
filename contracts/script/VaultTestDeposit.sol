@@ -29,7 +29,6 @@ contract TestDeposit is Script {
 
         console2.log("pre-msg.sender", msg.sender);
         console2.log("pre-liquidStakedToken.balanceOf()", liquidStakedToken.balanceOf(msg.sender));
-        console2.log("pre-totalDeposited()", vault.totalDeposited());
         console2.log("pre-totalAssets()", vault.totalAssets());
         console2.log("pre-balanceOf()", vault.balanceOf(msg.sender));
 
@@ -40,7 +39,6 @@ contract TestDeposit is Script {
     
         vm.stopBroadcast();
 
-        console2.log("post-totalDeposited()", vault.totalDeposited());
         console2.log("post-totalAssets()", vault.totalAssets());
         console2.log("post-balanceOf()", vault.balanceOf(msg.sender));
 

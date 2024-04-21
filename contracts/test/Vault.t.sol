@@ -38,7 +38,7 @@ contract AssetManagerTest is Test {
         vault.deposit(10, msg.sender);
         assertEq(vault.balanceOf(msg.sender), 10);
         assertEq(liquidStakedToken.balanceOf(msg.sender), 100 - 10);
-        assertEq(vault.totalDeposited(), 10);
+        assertEq(vault.totalAssets(), 10);
     }
 
     function test_minting() public view {

@@ -12,7 +12,6 @@ const ERC4626_ABI = [
     "function withdraw(uint256 assets, address receiver, address owner) external returns (uint256 shares)",
     "function deposit(uint256 assets, address receiver) external returns (uint256 shares)",
     "function totalAssets() external view returns (uint256 totalManagedAssets)",
-    "function totalDeposited() public view returns (uint256)",
     "function asset() external view returns (address assetTokenAddress)",
     "function totalSupply() external view returns (uint256)",
     "function balanceOf(address account) external view returns (uint256)",
@@ -322,7 +321,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             
             const vaultTotalShares = await vaultContract.totalSupply();
-            const vaultTotalAssets = await vaultContract.totalDeposited();
+            const vaultTotalAssets = await vaultContract.totalAssets();
             const vaultSharePrice = vaultTotalAssets / vaultTotalShares;
 
             const vaultOurShares = await vaultContract.balanceOf(walletAddress);
