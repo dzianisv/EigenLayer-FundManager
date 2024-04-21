@@ -11,6 +11,11 @@ interface IEigenLayerOperator {
     function getDetails() external view returns (string memory);
 }
 
+struct OperatorInfo {
+    address operator;
+    uint256 weight;
+}
+
 contract HoldingsManager is AccessControlEnumerable {
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
 
@@ -33,16 +38,15 @@ contract HoldingsManager is AccessControlEnumerable {
     // Remove a manager -> revokeRole(MANAGER_RILE, address)
 
     // Set or update an MyOperator's stake
-    function setOperator(address operator, uint256 stakeBps) external onlyRole(MANAGER_ROLE) {
+    function setOperator(address operator, uint256 weight) external onlyRole(MANAGER_ROLE) {
         require(operator != address(0), "Invalid operator address");
-        require(stakeBps <= 100000, "Invalid BPS");
         
         if (!_operators.contains(operator)) {
             MyOperator myOperator = new MyOperator(operator);
             _operators.set(operator, uint160(address(myOperator)));
         }
 
-        _operatorWeights.set(operator, stakeBps);
+        _operatorWeights.set(operator, weight);
     }
 
     function removeOperator(address operator) external onlyRole(MANAGER_ROLE){
@@ -76,11 +80,6 @@ contract HoldingsManager is AccessControlEnumerable {
         }
 
         return (operators, stakes);
-    }
-
-    struct OperatorInfo {
-        address operator;
-        uint256 weight;
     }
 
     // Get all operators and their stakes as OperatorInfo[]

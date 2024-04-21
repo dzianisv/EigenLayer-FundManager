@@ -14,8 +14,8 @@ import "./MyOperator.sol";
 
 contract Vault is ERC4626 {
     // Assuming HoldingsManager is defined elsewhere in your project
-    HoldingsManager holdingsManager;
-    IEigenLayerContracts eigenLayerContracts;
+    HoldingsManager public holdingsManager;
+    IEigenLayerContracts public eigenLayerContracts;
 
     using EnumerableMap for EnumerableMap.AddressToUintMap;
     

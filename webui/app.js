@@ -35,10 +35,35 @@ const HoldingsManager_ABI = [
     "function getOperatorWeight(address operator) public view returns (uint256)",
     "function existsOperator(address operator) public view returns (bool)",
     "function numberOfOperators() public view returns (uint256)",
-    "function getOperatorsWeights() public view returns (address[] memory, uint256[] memory)"
+    "function getOperatorsWeights() public view returns (address[] memory, uint256[] memory)",
+    {
+        "inputs": [],
+        "name": "getOperatorsInfo",
+        "outputs": [
+            {
+                "components": [
+                    {
+                        "internalType": "address",
+                        "name": "operator",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "weight",
+                        "type": "uint256"
+                    }
+                ],
+                "internalType": "struct OperatorInfo[]",
+                "name": "",
+                "type": "tuple[]"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
 ];
 
-const operators = {
+const operatorsMetadata = {
     17000: {
         "0xbE4B4Fa92b6767FDa2C8D1db53A286834dB19638": {
             "metadata": "https://raw.githubusercontent.com/Layr-Labs/eigendata/master/operators/coinbasecloud/metadata.json"
@@ -111,8 +136,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const assetTokenContract = new ethers.Contract(assetSymbol, ERC20_ABI, signer);
     const holdingsManagerContract = new ethers.Contract(await vaultContract.holdingsManager(), HodlingsManager_ABI, signer);
 
-    holdingsManagerContract.get
-
     // Fetch balance and display
     async function fetchShares() {
         const balance = await vaultContract.balanceOf(walletAddress);
@@ -138,7 +161,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await fetchAssets();
         await fetchShares();
         await fetchBalance();
-        // await updateHoldingsTable();
+        await updateHoldingsTable();
     }
 
     await fetchAll();
@@ -201,28 +224,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     async function updateHoldingsTable() {
-        return;
         console.log('updateHoldingsTable')
         // Fetch the vaults
-        const vaultAddresses = await vaultContract.asset();
-        const totalAssets = await vaultContract.totalAssets();
+
         let items = [];
 
-        for (let address of vaultAddresses) {
-            // Create ERC4626 contract instance
-            const vault = new ethers.Contract(address, ERC4626_ABI, signer); // Ensure you have the ABI for ERC4626
-
-            const perfomanceIndex = await vaultContract.getPerfomanceIndex(address);
-
+        const operators = await holdingsManagerContract.getOperatorsInfo();
+        for (let operator of operators) {
+            console.log(operator);
+ 
             // Fetch the necessary data
-            const name = await vault.name();
-            const symbol = await vault.symbol();
-            const vaultTotalShares = await vault.totalSupply();
-            const vaultTotalAssets = await vault.totalAssets();
+            const name = "";
+            const symbol = "";
+            const vaultTotalShares = 0.001;
+            const vaultTotalAssets = 0.001;
             const vaultSharePrice = vaultTotalAssets / vaultTotalShares;
 
-            const vaultOurShares = await vault.balanceOf(contractAddress);
-            const vaultOurAssets = vaultSharePrice * vaultOurShares;
+            const vaultOurShares = 0.001;
+            const vaultOurAssets = 0.001;
 
             let holdingPercentage = 0;
             if (totalAssets > 0) {
@@ -233,7 +252,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 name, symbol, vaultTotalShares, vaultTotalAssets, vaultSharePrice, vaultOurShares, vaultOurAssets,  holdingPercentage, perfomanceIndex
             });
         }
-        updateVaults(items);
+        updateHoldings(items);
     }
 
 });
