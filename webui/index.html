@@ -313,11 +313,72 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
+    <!-- Busy Overlay implementation -->
+    <div id="busyOverlay" style="display: none;">
+        <div class="spinner"></div>
+        <p id="busyMessage" style="color: white; margin-top: 20px; font-size: 1.2em;"></p>
+    </div>
+
+    <style>
+        #busyOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0, 0.50);
+            /* Gray background with 25% opacity */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            /* Ensure items are vertically stacked */
+            z-index: 1000;
+            /* High z-index to cover other content */
+        }
+
+        .spinner {
+            border: 16px solid #f3f3f3;
+            /* Light grey */
+            border-top: 16px solid #3498db;
+            /* Blue */
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+        }
+
+        #busyMessage {
+            color: white;
+            /* White text color */
+            margin-top: 20px;
+            /* Space from spinner */
+            font-size: 1.2em;
+            /* Larger text */
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var elems = document.querySelectorAll('select');
-            var instances = M.FormSelect.init(elems, {});
-        });
+        function setAppBusy(isBusy, message = '') {
+            const overlay = document.getElementById('busyOverlay');
+            const messageElement = document.getElementById('busyMessage');
+            if (isBusy) {
+                messageElement.innerHTML = message; // Set the message text
+                overlay.style.display = 'flex'; // Show the overlay
+            } else {
+                overlay.style.display = 'none'; // Hide the overlay
+            }
+        }
     </script>
 </body>
 

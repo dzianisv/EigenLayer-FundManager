@@ -1,6 +1,6 @@
 const networks = {
     31337: {name: "localnet", contract: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"},
-    17000: {name: "Holesky", contract: "0xf40bfe3bef3857c774eb821294937e06e4680563", explorer: "https://holesky.etherscan.io/address"},
+    17000: {name: "Holesky", contract: "0x0aca09561faab8140d8c5106c117b9ed5d536f4c", explorer: "https://holesky.etherscan.io/"},
 };
 
 const txOptions = {
@@ -172,6 +172,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const assetContract = new ethers.Contract(assetAddress, ERC20_ABI, signer);
     const assetSymbol = await assetContract.symbol();
 
+    async function waitForTransaction(txFn, description) {
+        setAppBusy(true, `Please sign "${description}" transaction`);
+        const tx = await txFn();
+        setAppBusy(true, `Waiting for the "${description}" <a href="${network.explorer}/tx/${tx.hash}">transaction</a>`);
+        const status = await tx.wait();
+        console.log(description, status);
+        setAppBusy(false);
+        return status;
+    }
+
     // Fetch balance and display
     async function fetchShares() {
         const balance = await vaultContract.balanceOf(walletAddress);
@@ -209,26 +219,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('depositBtn').addEventListener('click', async () => {
         const amount = ethers.utils.parseEther(document.getElementById('amountInput').value);
         try {
-            
-            {
-                console.log("Approve", amount);
-                let tx = await assetContract.approve(contractAddress, amount);
-                console.log("Watingin for the transactoin", tx);
-                console.log("Approved", await tx.wait());
-            }
-
-            {
-                console.log("Deposit", amount, assetSymbol);
-                const tx = await vaultContract.deposit(amount, await signer.getAddress());
-                console.log("Watingin for the transactoin", tx);
-                console.log("Deposited", await tx.wait());
-            }
-
+            await waitForTransaction(async () => await assetContract.approve(contractAddress, amount), assetSymbol + " approve");
+            await waitForTransaction(async () => await assetContract.approve(contractAddress, amount), "deposit");
             fetchAll();
         } catch (error) {
             console.error("Deposit failed", error);
             alert(JSON.stringify(error));
         }
+        setAppBusy(false);
     });
 
     // Withdraw
@@ -246,11 +244,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('setOperator').addEventListener('click', async () => {
         const operatorAddress = ethers.utils.parseEther(document.getElementById('operatorAddress').value);
-        const operatorWeightBps = Math.floor(parseFloat(document.getElementById("operatorWeight").value));
+        const operatorWeight = Math.floor(parseFloat(document.getElementById("operatorWeight").value));
 
         try {
-            const tx = await holdingPercentage.setOperator(operatorAddress, operatorWeightBps, txOptions);
-            await tx.wait();
+            await waitForTransaction(() => holdingPercentage.setOperator(operatorAddress, operatorWeight, txOptions), "set operator weight");
             fetchAll();
         } catch (error) {
             console.error("setOperator failed:", error);
