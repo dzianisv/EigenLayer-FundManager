@@ -7,6 +7,8 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 
+import "eigenlayer-contracts/src/contracts/interfaces/IStrategy.sol";
+
 import {IEigenLayerContracts} from "./EigenLayerContracts.sol";
 import "./HoldingsManager.sol";
 import "./MyOperator.sol";
@@ -20,7 +22,7 @@ contract Vault is ERC4626 {
     using EnumerableMap for EnumerableMap.AddressToUintMap;
     
     uint256 private _totalDepositedTokens;
-    EnumerableMap.AddressToUintMap private _stakedTokensPortfolio; // Map that represents current stake porfolio: MymyOperatorAddress:AssetTokensStaked
+    EnumerableMap.AddressToUintMap private _stakedTokensPortfolio; // Map that represents current stake porfolio: MyOperatorAddress:AssetTokensStaked
 
     constructor(
         IERC20Metadata _underlyingAsset,
@@ -72,6 +74,56 @@ contract Vault is ERC4626 {
         address receiver
     ) public override returns (uint256) {
         return super.mint(shares, receiver);
+    }
+
+    // return Staker (MyOperator) addresses, EigenLayer operator addresses, deposit amounts
+    function getDeposits() public view returns (address[] memory, address[] memory, uint256[] memory) {        
+        uint256 length = _stakedTokensPortfolio.length();
+
+        address[] memory stakers = new address[](length);
+        address[] memory operators = new address[](length);
+        uint256[] memory amounts = new uint256[](length);
+        for (uint i = 0; i < length; i++) {
+            (address staker, uint256 amount) = _stakedTokensPortfolio.at(i);
+            stakers[i] = staker;
+            operators[i] = MyOperator(staker).operator();
+            amounts[i] = amount;
+        }
+
+        return (stakers, operators, amounts);
+    }
+
+    // return Staker (MyOperator) addresses, EigenLayer operator addresses, reward amounts
+    function getRewards() public view returns (address[] memory, address[] memory, uint256[] memory) {        
+        (MyOperator[] memory operators, ) = holdingsManager.getAllOperatorStakes();
+
+        address[] memory stakerAddresses = new address[](operators.length);
+        address[] memory operatorAddresses = new address[](operators.length);
+        uint256[] memory rewards = new uint256[](operators.length);
+        for (uint i = 0; i < operators.length; i++) {
+            address stakerAddress = address(operators[i]);
+            (IStrategy[] memory strategies, uint256[] memory shares) = eigenLayerContracts.delegationManager().getDelegatableShares(stakerAddress);
+
+            uint256 amount = 0;
+            for (uint j = 0; j < strategies.length; j++) {
+                require(asset() == address(strategies[j].underlyingToken()), "Found mismatched underlying token between Vault and Strategy");
+                amount += strategies[j].sharesToUnderlyingView(shares[j]);
+            }
+
+            stakerAddresses[i] = stakerAddress;
+            operatorAddresses[i] = operators[i].operator();
+            uint256 deposited = 0;
+            if (_stakedTokensPortfolio.contains(stakerAddress)) {
+                deposited = _stakedTokensPortfolio.get(stakerAddress);
+            }
+            uint256 reward = 0;
+            if (amount > deposited) {
+                reward = amount - deposited;
+            }
+            rewards[i] = reward;
+        }
+
+        return (stakerAddresses, operatorAddresses, rewards);
     }
 
     function _stake(MyOperator myOperator, uint256 amount) private {

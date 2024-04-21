@@ -8,7 +8,7 @@ import {Vault} from "../src/Vault.sol";
 import "./TestCoin.sol";
 import {HoldingsManager} from "../src/HoldingsManager.sol";
 import {IEigenLayerContracts, TestnetContracts} from "../src/EigenLayerContracts.sol";
-
+import {MyOperator} from "../src/MyOperator.sol";
 
 contract AssetManagerTest is Test {
     Vault public vault;
