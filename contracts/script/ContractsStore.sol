@@ -38,4 +38,9 @@ library ContractsStore {
     function getRewardsToken(VmSafe vm) external view returns (MintableToken) {
         return MintableToken(vm.readFile(".data/RewardsToken.txt").toAddress());
     }
+
+    function getExchnage(VmSafe vm) external view returns (IExchange) {
+        return IExchange(vm.readFile(".data/Exchange.txt").toAddress());
+    }
+    
 }

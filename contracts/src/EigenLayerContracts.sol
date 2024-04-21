@@ -18,6 +18,12 @@ interface IEigenLayerContracts {
 // Testnet deployments https://github.com/Layr-Labs/eigenlayer-contracts?tab=readme-ov-file#current-testnet-deployment
 contract TestnetContracts is IEigenLayerContracts {
     IExchange public exchange;
+    ERC20 public rewardsToken;
+
+    constructor(ERC20 _rewardsToken, IExchange _exchange) {
+        rewardsToken = _rewardsToken;
+        exchange = _exchange;
+    }
 
     function delegationManager() external pure returns (DelegationManager) {
         return DelegationManager(address(0xA44151489861Fe9e3055d95adC98FbD462B948e7));
@@ -54,11 +60,6 @@ contract TestnetContracts is IEigenLayerContracts {
 
     function _compareTokenSymbol(string memory a, string memory b) internal pure returns (bool) {
         return keccak256(abi.encodePacked(a)) == keccak256(abi.encodePacked(b));
-    }
-
-    //TODO: remove in production, rewards simulation
-    function rewardsToken() external pure returns (ERC20) {
-        return ERC20(address(0x154CA694527015D5DcdDE539A8827bAe1F47A78C));
     }
 }
 

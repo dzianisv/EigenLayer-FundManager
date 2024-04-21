@@ -18,23 +18,6 @@ import "./AddressLibrary.sol";
 import "./ContractsStore.sol";
 import "../test/Exchange.sol";
 
-contract DeployEingenLayerContracts is Script {
-    using AddressLibrary for address;
-
-    function setUp() public {}
-
-    function run() public {
-        vm.startBroadcast();
-        IEigenLayerContracts elContracts = new TestnetContracts();
-        vm.stopBroadcast();
-
-        console2.log("EingenLayerContracts address", address(elContracts));
-        vm.writeFile(
-            ".data/IEigenLayerContracts.txt",
-            address(elContracts).toHexString()
-        );
-    }
-}
 contract DeployRewardsToken is Script {
     using AddressLibrary for address;
 
