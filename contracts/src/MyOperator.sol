@@ -99,4 +99,19 @@ contract MyOperator {
         // TODO: need to wait for blocks
         delegationManager.completeQueuedWithdrawal(withdrawal, tokens, 0, true);
     }
+
+    function getRewards(uint256 deposited, IEigenLayerContracts eigenLayerContracts) public view returns (uint256) {
+        (IStrategy[] memory strategies, uint256[] memory shares) = eigenLayerContracts.delegationManager().getDelegatableShares(operator);
+
+        uint256 amount = 0;
+        for (uint j = 0; j < strategies.length; j++) {
+            amount += strategies[j].sharesToUnderlyingView(shares[j]);
+        }
+
+        uint256 reward = 0;
+        if (amount > deposited) {
+            reward = amount - deposited;
+        }
+        return reward;
+    }
 }

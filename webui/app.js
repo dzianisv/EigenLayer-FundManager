@@ -20,6 +20,41 @@ const ERC4626_ABI = [
     "function symbol() external view returns (string memory)",
     "function convertToAssets(uint256 shares) external view returns (uint256 assets)",
     "function holdingsManager() public view returns (address)",
+    {
+        "type": "function",
+        "name": "getPortfolio",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "tuple[]",
+                "internalType": "struct OperatorAllocation[]",
+                "components": [
+                    {
+                        "name": "staker",
+                        "type": "address",
+                        "internalType": "address"
+                    },
+                    {
+                        "name": "operator",
+                        "type": "address",
+                        "internalType": "address"
+                    },
+                    {
+                        "name": "deposited",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    },
+                    {
+                        "name": "rewards",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    }
+                ]
+            }
+        ],
+        "stateMutability": "view"
+    },
 ];
 
 const ERC20_ABI = [
@@ -224,17 +259,47 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
 
+    async function listOperators() {
+        const holdingsManagerContract = new ethers.Contract(await vaultContract.holdingsManager(), HoldingsManager_ABI, signer);
+
+        const operators = await holdingsManagerContract.getOperatorsInfo();
+        for (let operatorStaker of operators) {
+            console.log(operator);
+
+            const address = operatorStaker.operator;
+            
+            let metadata = {name: "", logo: "", description: "", website: ""};
+            const operatorRecord = operatorsMetadata[chainId][address];
+            if (operatorRecord) {
+                // use cached
+                if (operatorRecord.metadata) {
+                    metadata = operatorRecord.metadata;
+                } else {
+                    try { 
+                        metadata = await (await fetch(operatorRecord.metadataUrl)).json();
+                        //cache json metadata
+                        operatorRecord.metadata = metadata;
+                        console.log(address, metadata);
+                    } catch(err) {
+                        console.error(`failed to retrieve oeprator ${address} on chainId=${chainId} metadata`, err);
+                    }
+                }
+            }
+
+            const info = {...metadata, ...operatorStaker};
+        }
+    }
+
     async function updateHoldingsTable() {
         console.log('updateHoldingsTable');
 
         let items = [];
 
-        const holdingsManagerContract = new ethers.Contract(await vaultContract.holdingsManager(), HoldingsManager_ABI, signer);
-        const operators = await holdingsManagerContract.getOperatorsInfo();
-        for (let operator of operators) {
+        const portfolioPositions = await vaultContract.getPortfolio();
+        for (let portfolioPosition of portfolioPositions) {
             console.log(operator);
 
-            const address = operator.operator;
+            const address = portfolioPosition.operator;
             
        
             let metadata = {name: "", logo: "", description: "", website: ""};
@@ -255,19 +320,25 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
             
-            const totalDeposited = await vaultContract.totalDeposited();
-
-            const vaultTotalShares = await vaultContract.totalAssets();
-            const vaultTotalAssets = await vaultContract.totalSupply();
+            const vaultTotalShares = await vaultContract.totalSupply();
+            const vaultTotalAssets = await vaultContract.totalDeposited();
             const vaultSharePrice = vaultTotalAssets / vaultTotalShares;
 
             const vaultOurShares = await vaultContract.balanceOf(walletAddress);
             const vaultOurAssets = vaultOurShares * vaultSharePrice;
-            const perfomanceIndex = 0;
-            const holdingPercentage = operator.weight;
+            const rewards = portfolioPosition.rewards;
+            const deposited = portfolioPosition.deposited;
 
             items.push({
-                ...metadata, address, vaultTotalShares, vaultTotalAssets, vaultSharePrice, vaultOurShares, vaultOurAssets,  holdingPercentage, perfomanceIndex
+                ...metadata, 
+                address, 
+                vaultTotalShares, 
+                vaultTotalAssets,
+                vaultSharePrice, 
+                vaultOurShares, 
+                vaultOurAssets,  
+                deposited, 
+                rewards
             });
         }
         updateHoldings(items);

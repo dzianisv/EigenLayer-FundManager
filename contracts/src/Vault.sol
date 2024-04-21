@@ -90,7 +90,7 @@ contract Vault is ERC4626 {
         for (uint i = 0; i < length; i++) {
             (address staker, uint256 deposited) = _stakedTokensPortfolio.at(i);
             address operator = MyOperator(staker).operator();
-            uint256 rewards = _getRewards(staker, deposited);
+            uint256 rewards = MyOperator(staker).getRewards(deposited, eigenLayerContracts);
             allocations[i] = OperatorAllocation({
                 staker: staker,
                 operator: operator,
@@ -100,22 +100,6 @@ contract Vault is ERC4626 {
         }
 
         return allocations;
-    }
-
-    function _getRewards(address staker, uint256 deposited) internal view returns (uint256) {
-        (IStrategy[] memory strategies, uint256[] memory shares) = eigenLayerContracts.delegationManager().getDelegatableShares(staker);
-
-        uint256 amount = 0;
-        for (uint j = 0; j < strategies.length; j++) {
-            require(asset() == address(strategies[j].underlyingToken()), "Found mismatched underlying token between Vault and Strategy");
-            amount += strategies[j].sharesToUnderlyingView(shares[j]);
-        }
-
-        uint256 reward = 0;
-        if (amount > deposited) {
-            reward = amount - deposited;
-        }
-        return reward;
     }
 
     function _stake(MyOperator myOperator, uint256 amount) private {

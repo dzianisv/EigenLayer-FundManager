@@ -48,7 +48,6 @@ contract AssetManagerTest is Test {
 
     function test_holdingManager() public {
         HoldingsManager holdingManager = vault.holdingsManager();
-        holdingManager.setOperator(address(0x1), 100);
         
         for (uint i = 0; i < 2; i++) {
             holdingManager.setOperator(address(uint160((0x1 * (i+1)))), 100 * (i+1));
@@ -65,4 +64,17 @@ contract AssetManagerTest is Test {
             assertEq(operators[i].weight, 100 * (i+1));
         }
     }
+
+    function test_getPortfolio() public {
+        HoldingsManager holdingManager = vault.holdingsManager();
+
+        for (uint i = 0; i < 2; i++) {
+            holdingManager.setOperator(address(uint160((0x1 * (i+1)))), 100 * (i+1));
+        }
+    
+        OperatorAllocation[] memory portfolio = vault.getPortfolio();
+        // portoflio.length is going to be 0 until _redistribute is called
+        assertEq(portfolio.length, 0);
+    }
+        
 }
