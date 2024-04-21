@@ -29,6 +29,8 @@ contract AddOperatorScript is Script {
             MintableToken(address(ContractsStore.getEigenLayerContracts(vm).rewardsToken())).mint(operators[i].staker, 10);
         }
 
+        vault.claimAndReinvest();
+
         vm.stopBroadcast();
     }
 }
