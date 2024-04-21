@@ -18,8 +18,10 @@
         <div class="nav-wrapper">
             <span class="brand-logo">📈 EigenLayer Fund</span>
             <ul id="nav-mobile" class="right">
-                <li><a id="networkInfo"><span class="material-icons">signal_cellular_alt</span><span id="networkDetails"></span></a></li>
-                <li><a id="walletInfo"><span class="material-icons">wallet</span><span id="walletAddress"></span></a></li>
+                <li><a id="networkInfo"><span class="material-icons">signal_cellular_alt</span><span
+                            id="networkDetails"></span></a></li>
+                <li><a id="walletInfo"><span class="material-icons">wallet</span><span id="walletAddress"></span></a>
+                </li>
                 <li><a href="#" id="connectWalletBtn"><i class="material-icons">wallet</i></a></li>
                 <li><a href="#" id="disconnectWalletBtn"><i class="material-icons">logout</i></a></li>
             </ul>
@@ -115,7 +117,7 @@
                         <label>Token:</label>
                         <input type="text" id="amountInput" value="rETH" class="form-control">
                     </div>
-                    
+
                     <!-- <div class="row mt-3 input-field form-control">
                         <select>
                             <option value="ETH">ETH</option>
@@ -264,22 +266,38 @@
         </table>
     </div>
 
+    <style>
+        .logo-name {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-name img {
+            margin-right: 10px;
+            /* Space between the logo and the name */
+        }
+    </style>
+
     <script>
         function updateHoldings(items) {
             let newTable = "";
 
             for (const item of items) {
-                // Add a row to the table
                 const row = `<tr>
-                    <td><a href="${item.url}"><img src="${item.logo}" height=48 width=48 style="margin-bottom: -10;" />${item.name}</td>
-                    <td><a href="https://holesky.etherscan.io/address/${item.address}">${item.address}</a></td>
-                    <td>${ethers.utils.formatEther(item.deposited)} ${item.assetSymbol}</td>
-                    <td>${item.rewards}</td>
-                    <td>${ethers.utils.formatEther(item.vaultOurShares)}</td>
-                    <td>${ethers.utils.formatEther(item.vaultTotalShares)}</td>
-                    <td>${ethers.utils.formatEther(item.vaultTotalAssets)} ${item.assetSymbol}</td>
-                    <td><button id="deleteButton" class="btn btn-danger mt-2"><i class="material-icons">delete</i></button></td>
-                </tr>`;
+                <td>
+                    <div class="logo-name">
+                        <img src="${item.logo}" alt="${item.name} logo" height="48" width="48" />
+                        <a href="${item.url}">${item.name}</a>
+                    </div>
+                </td>
+                <td><a href="https://holesky.etherscan.io/address/${item.address}">${item.address}</a></td>
+                <td>${ethers.utils.formatEther(item.deposited)} ${item.assetSymbol}</td>
+                <td>${item.rewards}</td>
+                <td>${ethers.utils.formatEther(item.vaultOurShares)}</td>
+                <td>${ethers.utils.formatEther(item.vaultTotalShares)}</td>
+                <td>${ethers.utils.formatEther(item.vaultTotalAssets)} ${item.assetSymbol}</td>
+                <td><button id="deleteButton" class="btn btn-danger mt-2"><i class="material-icons">delete</i></button></td>
+            </tr>`;
 
                 newTable += row;
             }
@@ -292,7 +310,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             var elems = document.querySelectorAll('select');
             var instances = M.FormSelect.init(elems, {});
         });
