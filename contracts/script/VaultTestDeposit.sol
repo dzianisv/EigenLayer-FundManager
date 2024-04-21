@@ -31,6 +31,7 @@ contract TestDeposit is Script {
     
         liquidStakedToken.approve(address(vault), testDeposit);
         vault.deposit(testDeposit, msg.sender);
+        
         console2.log("totalDeposited()", vault.totalDeposited());
         console2.log("totalAssets()", vault.totalAssets());
         console2.log("balanceOf()", vault.balanceOf(msg.sender));

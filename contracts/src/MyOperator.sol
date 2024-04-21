@@ -43,7 +43,7 @@ contract MyOperator {
     function _depositToEigenLayer(ERC20 token, uint256 amount, IEigenLayerContracts eigenLayerContracts) private { 
         IStrategy strategy = eigenLayerContracts.strategy(token.symbol());
         IStrategyManager strategyManager = eigenLayerContracts.strategyManager();
-        token.transferFrom(msg.sender, address(this), amount);
+        // token.transferFrom(msg.sender, address(this), amount);
         token.approve(address(strategyManager), amount); 
         strategyManager.depositIntoStrategy(strategy, token, amount);
     }
