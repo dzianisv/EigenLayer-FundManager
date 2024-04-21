@@ -113,7 +113,7 @@ contract Vault is ERC4626 {
     }
 
     function _unstake(MyOperator operator, uint256 amount) private {
-        operator.unstake(ERC20(asset()), amount, eigenLayerContracts);
+        // TODO: ⚠️ operator.unstake(ERC20(asset()), amount, eigenLayerContracts);
     }
 
     function _redistribute() private {

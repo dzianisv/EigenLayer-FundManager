@@ -1,6 +1,6 @@
 const networks = {
     31337: {name: "localnet", contract: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"},
-    17000: {name: "Holesky", contract: "0x0aca09561faab8140d8c5106c117b9ed5d536f4c", explorer: "https://holesky.etherscan.io/"},
+    17000: {name: "Holesky", contract: "0xfb9ccd7c1df1968393ec7fad395ce617cf23811d", explorer: "https://holesky.etherscan.io/"},
 };
 
 const txOptions = {
@@ -98,11 +98,19 @@ const HoldingsManager_ABI = [
     }
 ];
 
+// Metadata files are located there https://github.com/Layr-Labs/eigendata/tree/master/operators
 const operatorsMetadata = {
     17000: {
         "0xbE4B4Fa92b6767FDa2C8D1db53A286834dB19638": {
             metadataUrl: "https://raw.githubusercontent.com/Layr-Labs/eigendata/master/operators/coinbasecloud/metadata.json"
+        },
+        "0x5e29b3107937b4675FdDF113EDC5530498B3Fb70": {
+            metadataUrl: "https://raw.githubusercontent.com/Layr-Labs/eigendata/master/operators/Ankr/metadata.json"
+        },
+        "0x4E59E88207Ac04e6615D79Ae565E877DD80BCF8e": {
+            metadataUrl: "https://raw.githubusercontent.com/Layr-Labs/eigendata/master/operators/GoogleCloudWeb3/metadata.json"
         }
+
     }
 }
 
@@ -232,6 +240,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Withdraw
     document.getElementById('withdrawBtn').addEventListener('click', async () => {
         alert("not implemented!");
+
         const amount = ethers.utils.parseEther(document.getElementById('amountInput').value);
         try {
             const tx = await vaultContract.withdraw(amount, await signer.getAddress(), await signer.getAddress(), txOptions);
@@ -249,7 +258,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         try {
             console.log('setOperator', operatorAddress, operatorWeight);
-            await waitForTransaction(() => holdingPercentage.setOperator(operatorAddress, operatorWeight, txOptions), "set operator weight");
+            await waitForTransaction(async () => await holdingPercentage.setOperator(operatorAddress, operatorWeight, txOptions), "set operator weight");
             fetchAll();
         } catch (error) {
             console.error("setOperator failed:", error);

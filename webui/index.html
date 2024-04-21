@@ -91,7 +91,7 @@
 
     <script>
         function updateShares(balance, total, symbol) {
-            document.getElementById('shares').innerText = ethers.utils.formatEther(balance) + "/" + ethers.utils.formatEther(total) + " " + symbol;
+            document.getElementById('shares').innerText = ethers.utils.formatUnits(balance, 'gwei') + "/" + ethers.utils.formatUnits(total, 'gwei') + ` ${symbol}`;
         }
         function updateInvestedAssets(amount, symbol) {
             document.getElementById('investedAssets').innerText = ethers.utils.formatEther(amount) + " " + symbol;
