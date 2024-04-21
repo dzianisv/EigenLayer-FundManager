@@ -13,7 +13,6 @@ import {IEigenLayerContracts} from "./EigenLayerContracts.sol";
 import "./HoldingsManager.sol";
 import "./MyOperator.sol";
 
-
 struct OperatorAllocation {
     address staker;
     address operator;
@@ -27,9 +26,11 @@ contract Vault is ERC4626 {
     IEigenLayerContracts public eigenLayerContracts;
 
     using EnumerableMap for EnumerableMap.AddressToUintMap;
-    
+
     uint256 private _totalDepositedTokens;
     EnumerableMap.AddressToUintMap private _stakedTokensPortfolio; // Map that represents current stake porfolio: MyOperatorAddress:AssetTokensStaked
+
+    event OutOfAssets(uint256 required, uint256 available);
 
     constructor(
         IERC20Metadata _underlyingAsset,
@@ -87,14 +88,19 @@ contract Vault is ERC4626 {
         return super.mint(shares, receiver);
     }
 
-    function getPortfolio() public view returns (OperatorAllocation[] memory) {        
+    function getPortfolio() public view returns (OperatorAllocation[] memory) {
         uint256 length = _stakedTokensPortfolio.length();
 
-        OperatorAllocation[] memory allocations = new OperatorAllocation[](length);
+        OperatorAllocation[] memory allocations = new OperatorAllocation[](
+            length
+        );
         for (uint i = 0; i < length; i++) {
             (address staker, uint256 deposited) = _stakedTokensPortfolio.at(i);
             address operator = MyOperator(staker).operator();
-            uint256 rewards = MyOperator(staker).getRewards(deposited, eigenLayerContracts);
+            uint256 rewards = MyOperator(staker).getRewards(
+                deposited,
+                eigenLayerContracts
+            );
             allocations[i] = OperatorAllocation({
                 staker: staker,
                 operator: operator,
@@ -113,31 +119,48 @@ contract Vault is ERC4626 {
     }
 
     function _unstake(MyOperator operator, uint256 amount) private {
-        // TODO: ⚠️ operator.unstake(ERC20(asset()), amount, eigenLayerContracts);
+        operator.unstake(ERC20(asset()), amount, eigenLayerContracts);
     }
 
     function _redistribute() private {
-        (MyOperator[] memory operators, uint256[] memory operatorsWeights) = holdingsManager.getOperatorsWeights();
+        (
+            MyOperator[] memory operators,
+            uint256[] memory operatorsWeights
+        ) = holdingsManager.getOperatorsWeights();
         uint256 availableForTrade = availableForTradeAssets();
 
         // Iterate through the portfolio to adjust or remove stakes
         for (uint i = 0; i < _stakedTokensPortfolio.length(); i++) {
-            (address myOperatorAddress, uint256 currentStake) = _stakedTokensPortfolio.at(i);
+            (
+                address myOperatorAddress,
+                uint256 currentStake
+            ) = _stakedTokensPortfolio.at(i);
 
             address operatorAddress = MyOperator(myOperatorAddress).operator();
-            uint256 targetStake = _calculateTargetStake(operatorAddress, availableForTrade);
+            uint256 targetStake = _calculateTargetStake(
+                operatorAddress,
+                availableForTrade
+            );
 
             if (targetStake > currentStake) {
                 uint256 amountToStake = targetStake - currentStake;
-                _stake(MyOperator(myOperatorAddress), amountToStake);
-                _stakedTokensPortfolio.set(myOperatorAddress, targetStake);  // Update the portfolio map to reflect the new stake
+                if (availableForTradeAssets() > amountToStake) {
+                    _stake(MyOperator(myOperatorAddress), amountToStake);
+                    _stakedTokensPortfolio.set(myOperatorAddress, targetStake); // Update the portfolio map to reflect the new stake
+                } else {
+                    emit OutOfAssets(amountToStake, availableForTradeAssets());
+                    break;
+                }
             } else if (currentStake > targetStake) {
+                //TODO: ⚠️ unstaking is not immediate action
+                continue;
+
                 uint256 amountToUnStake = currentStake - targetStake;
                 _unstake(MyOperator(myOperatorAddress), amountToUnStake);
                 if (targetStake == 0) {
-                    _stakedTokensPortfolio.remove(myOperatorAddress);  // Remove operator from portfolio if no longer needed
+                    _stakedTokensPortfolio.remove(myOperatorAddress); // Remove operator from portfolio if no longer needed
                 } else {
-                    _stakedTokensPortfolio.set(myOperatorAddress, targetStake);  // Update the portfolio
+                    _stakedTokensPortfolio.set(myOperatorAddress, targetStake); // Update the portfolio
                 }
             }
         }
@@ -145,19 +168,33 @@ contract Vault is ERC4626 {
         // Handle any new operators not already in the portfolio
         for (uint j = 0; j < operators.length; j++) {
             MyOperator myOperator = operators[j];
-            
-            uint256 targetStake = availableForTrade * operatorsWeights[j] / 10000;
-            if (!_stakedTokensPortfolio.contains(address(myOperator)) && targetStake > 0) {
+
+            uint256 targetStake = (availableForTrade * operatorsWeights[j]) /
+                10000;
+            if (
+                !_stakedTokensPortfolio.contains(address(myOperator)) &&
+                targetStake > 0
+            ) {
+                if (availableForTradeAssets() > targetStake) {
+                    emit OutOfAssets(targetStake, availableForTradeAssets());
+                    break;
+                }
+
                 _stake(myOperator, targetStake);
-                _stakedTokensPortfolio.set(address(myOperator), targetStake);  // Add new operator to the portfolio
+                _stakedTokensPortfolio.set(address(myOperator), targetStake); // Add new operator to the portfolio
             }
         }
     }
 
-    function _calculateTargetStake(address operatorAddress, uint256 availableForTrade) private view returns (uint256) {
+    function _calculateTargetStake(
+        address operatorAddress,
+        uint256 availableForTrade
+    ) private view returns (uint256) {
         if (holdingsManager.existsOperator(operatorAddress)) {
-            return availableForTrade * holdingsManager.getOperatorWeight(operatorAddress) / 10000;
+            return
+                (availableForTrade *
+                    holdingsManager.getOperatorWeight(operatorAddress)) / 10000;
         }
-        return 0;  // Return 0 if the operator is not found in the target distribution
+        return 0; // Return 0 if the operator is not found in the target distribution
     }
 }
