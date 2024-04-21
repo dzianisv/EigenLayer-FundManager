@@ -11,7 +11,7 @@ import "./AddressLibrary.sol";
 import "./ContractsStore.sol";
 
 import "../src/Vault.sol";
-import "../test/TestCoin.sol";
+import "../test/MintableToken.sol";
 import "../src/HoldingsManager.sol";
 import "../src/EigenLayerContracts.sol";
 
@@ -25,11 +25,10 @@ contract TestDeposit is Script {
 
         // ETHx
         ERC20 liquidStakedToken = ContractsStore.getETHxToken(vm);
-        uint256 testDeposit = 1;
+        uint256 testDeposit = liquidStakedToken.decimals() / 100;
 
         console2.log("pre-msg.sender", msg.sender);
         console2.log("pre-liquidStakedToken.balanceOf()", liquidStakedToken.balanceOf(msg.sender));
-        console2.log("pre-totalDeposited()", vault.totalDeposited());
         console2.log("pre-totalAssets()", vault.totalAssets());
         console2.log("pre-balanceOf()", vault.balanceOf(msg.sender));
 
@@ -40,7 +39,6 @@ contract TestDeposit is Script {
     
         vm.stopBroadcast();
 
-        console2.log("post-totalDeposited()", vault.totalDeposited());
         console2.log("post-totalAssets()", vault.totalAssets());
         console2.log("post-balanceOf()", vault.balanceOf(msg.sender));
 

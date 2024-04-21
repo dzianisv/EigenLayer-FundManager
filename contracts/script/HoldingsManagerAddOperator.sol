@@ -9,23 +9,24 @@ import {Script, console2} from "forge-std/Script.sol";
 
 import "./AddressLibrary.sol";
 import "./ContractsStore.sol";
+
 import "../src/Vault.sol";
 import "../test/MintableToken.sol";
 import "../src/HoldingsManager.sol";
 import "../src/EigenLayerContracts.sol";
-import "../src/MyOperator.sol";
 
-contract DeployTestOperator is Script {
-    using AddressLibrary for address;
+contract AddOperatorScript is Script {
+    using AddressLibrary for string;
 
     function setUp() public {}
 
     function run() public {
+        Vault vault = ContractsStore.getVault(vm);
+        HoldingsManager holdingsManager = vault.holdingsManager();
+     
         vm.startBroadcast();
-        MyOperator mOperator = new MyOperator(ContractsStore.getOperatorAddress(vm), ContractsStore.getEigenLayerContracts(vm));
+        holdingsManager.setOperator(address(0x5e29b3107937b4675FdDF113EDC5530498B3Fb70), 10);
+        holdingsManager.setOperator(address(0x4E59E88207Ac04e6615D79Ae565E877DD80BCF8e), 10);
         vm.stopBroadcast();
-
-        vm.writeFile('.data/MyOperator.txt', address(mOperator).toHexString());
-        console2.log("MyOperator address", address(mOperator));
     }
 }

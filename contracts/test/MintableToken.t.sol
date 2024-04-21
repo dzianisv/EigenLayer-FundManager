@@ -2,17 +2,17 @@
 pragma solidity ^0.8.12;
 
 import {Test, console2} from "forge-std/Test.sol";
-import "./TestCoin.sol";
+import "./MintableToken.sol";
 
 
-contract TestCoinTest is Test {
+contract MintableTokenTest is Test {
 
     function setUp() public {
 
     }
 
     function test_allowance() public {
-        TestCoin coin = new TestCoin("TestCoin", "TCN");
+        MintableToken coin = new MintableToken("MintableToken", "TCN");
         uint amount = 1000;
 
         console2.log(coin.symbol());

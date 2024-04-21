@@ -18,8 +18,10 @@
         <div class="nav-wrapper">
             <span class="brand-logo">📈 EigenLayer Fund</span>
             <ul id="nav-mobile" class="right">
-                <li><a id="networkInfo"><span class="material-icons">signal_cellular_alt</span><span id="networkDetails"></span></a></li>
-                <li><a id="walletInfo"><span class="material-icons">wallet</span><span id="walletAddress"></span></a></li>
+                <li><a id="networkInfo"><span class="material-icons">signal_cellular_alt</span><span
+                            id="networkDetails"></span></a></li>
+                <li><a id="walletInfo"><span class="material-icons">wallet</span><span id="walletAddress"></span></a>
+                </li>
                 <li><a href="#" id="connectWalletBtn"><i class="material-icons">wallet</i></a></li>
                 <li><a href="#" id="disconnectWalletBtn"><i class="material-icons">logout</i></a></li>
             </ul>
@@ -89,7 +91,7 @@
 
     <script>
         function updateShares(balance, total, symbol) {
-            document.getElementById('shares').innerText = ethers.utils.formatEther(balance) + "/" + ethers.utils.formatEther(total) + " " + symbol;
+            document.getElementById('shares').innerText = ethers.utils.formatEther(balance) + "/" + ethers.utils.formatEther(total) + ` ${symbol}`;
         }
         function updateInvestedAssets(amount, symbol) {
             document.getElementById('investedAssets').innerText = ethers.utils.formatEther(amount) + " " + symbol;
@@ -115,7 +117,7 @@
                         <label>Token:</label>
                         <input type="text" id="amountInput" value="rETH" class="form-control">
                     </div>
-                    
+
                     <!-- <div class="row mt-3 input-field form-control">
                         <select>
                             <option value="ETH">ETH</option>
@@ -156,15 +158,15 @@
         <div class="col s6 m6">
             <div class="card">
                 <div class="card-content">
-                    <span class="card-title"><i class="material-icons">account_balance</i>Operators managemend
+                    <span class="card-title"><i class="material-icons">account_balance</i>Operators management
                     </span>
                     <div class="mt-3">
                         <label>Operator Address:</label>
                         <input type="text" id="operatorAddress" class="form-control">
                     </div>
                     <div class="mt-3">
-                        <label>Stake (%):</label>
-                        <input type="text" id="operatorStake" class="form-control">
+                        <label>Weight:</label>
+                        <input type="text" id="operatorWeight" class="form-control">
                     </div>
                 </div>
                 <div class="card-action">
@@ -250,50 +252,133 @@
                 <tr>
                     <th>Name</th>
                     <th>Address</th>
-                    <th>Our Shares</th>
+                    <th>Delegated</th>
+                    <th>Rewards</th>
+                    <th>My Shares</th>
                     <th>Total Shares</th>
                     <th>Total Assets locked</th>
-                    <th>Weight</th>
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody id="vaultsTable">
+            <tbody id="portfolioPositionsTable">
                 <!-- Rows will be populated here -->
             </tbody>
         </table>
     </div>
 
+    <style>
+        .logo-name {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-name img {
+            margin-right: 10px;
+            /* Space between the logo and the name */
+        }
+    </style>
+
     <script>
+        function truncateAddress(address) {
+            return address.substr(0, 8) + '...';
+        }
+
         function updateHoldings(items) {
             let newTable = "";
 
             for (const item of items) {
-                // Add a row to the table
                 const row = `<tr>
-                <td><a href="${item.url}"><img src="${item.logo}" height=48 width=48 style="margin-bottom: -10;" />${item.name}</td>
-                <td><a href="https://holesky.etherscan.io/address/${item.address}">${item.address}</a></td>
+                <td>
+                    <div class="logo-name">
+                        <img src="${item.logo}" alt="${item.name} logo" height="48" width="48" />
+                        <a href="${item.url}">${item.name}</a>
+                    </div>
+                </td>
+                <td><a href="https://holesky.etherscan.io/address/${item.address}">${truncateAddress(item.address)}</a></td>
+                <td>${ethers.utils.formatEther(item.deposited)} ${item.assetSymbol}</td>
+                <td>${item.rewards}</td>
                 <td>${ethers.utils.formatEther(item.vaultOurShares)}</td>
                 <td>${ethers.utils.formatEther(item.vaultTotalShares)}</td>
-                <td>${ethers.utils.formatEther(item.vaultTotalAssets)}</td>
-                <td>${item.holdingPercentage}%</td>
+                <td>${ethers.utils.formatEther(item.vaultTotalAssets)} ${item.assetSymbol}</td>
                 <td><button id="deleteButton" class="btn btn-danger mt-2"><i class="material-icons">delete</i></button></td>
-                </tr>`;
+            </tr>`;
 
                 newTable += row;
             }
 
-            const tableBody = document.getElementById('vaultsTable');
+            const tableBody = document.getElementById('portfolioPositionsTable');
             tableBody.innerHTML = newTable;
         }
     </script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
+    <!-- Busy Overlay implementation -->
+    <div id="busyOverlay" style="display: none;">
+        <div class="spinner"></div>
+        <p id="busyMessage" style="color: white; margin-top: 20px; font-size: 1.2em;"></p>
+    </div>
+
+    <style>
+        #busyOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0, 0.50);
+            /* Gray background with 25% opacity */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            /* Ensure items are vertically stacked */
+            z-index: 1000;
+            /* High z-index to cover other content */
+        }
+
+        .spinner {
+            border: 16px solid #f3f3f3;
+            /* Light grey */
+            border-top: 16px solid #3498db;
+            /* Blue */
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+        }
+
+        #busyMessage {
+            color: white;
+            /* White text color */
+            margin-top: 20px;
+            /* Space from spinner */
+            font-size: 1.2em;
+            /* Larger text */
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var elems = document.querySelectorAll('select');
-            var instances = M.FormSelect.init(elems, {});
-        });
+        function setAppBusy(isBusy, message = '') {
+            const overlay = document.getElementById('busyOverlay');
+            const messageElement = document.getElementById('busyMessage');
+            if (isBusy) {
+                messageElement.innerHTML = message; // Set the message text
+                overlay.style.display = 'flex'; // Show the overlay
+            } else {
+                overlay.style.display = 'none'; // Hide the overlay
+            }
+        }
     </script>
 </body>
 

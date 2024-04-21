@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 import {Script, console2, VmSafe} from "forge-std/Script.sol";
 
 import "../src/Vault.sol";
-import "../test/TestCoin.sol";
+import "../test/MintableToken.sol";
 import "../src/HoldingsManager.sol";
 import "../src/EigenLayerContracts.sol";
 import "./AddressLibrary.sol";
@@ -34,4 +34,13 @@ library ContractsStore {
         // Coinbase Operator: https://holesky.etherscan.io/address/0xbe4b4fa92b6767fda2c8d1db53a286834db19638
         return address(0xbE4B4Fa92b6767FDa2C8D1db53A286834dB19638);
     }
+
+    function getRewardsToken(VmSafe vm) external view returns (MintableToken) {
+        return MintableToken(vm.readFile(".data/RewardsToken.txt").toAddress());
+    }
+
+    function getExchnage(VmSafe vm) external view returns (IExchange) {
+        return IExchange(vm.readFile(".data/Exchange.txt").toAddress());
+    }
+    
 }

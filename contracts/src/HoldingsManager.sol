@@ -3,7 +3,9 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
-import {MyOperator} from "./MyOperator.sol";
+
+import "./EigenLayerContracts.sol";
+import "./MyOperator.sol";
 
 
 interface IEigenLayerOperator {
@@ -13,6 +15,7 @@ interface IEigenLayerOperator {
 
 struct OperatorInfo {
     address operator;
+    address staker;
     uint256 weight;
 }
 
@@ -20,17 +23,20 @@ contract HoldingsManager is AccessControlEnumerable {
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
 
     using EnumerableMap for EnumerableMap.AddressToUintMap;
-    EnumerableMap.AddressToUintMap private _operators;  // Target Portfolio holdings map: MyOperatorAddress:TargetStakeInBps
+    EnumerableMap.AddressToUintMap private _stakers;  // Target Portfolio holdings map: MyOperatorAddress:TargetStakeInBps
 
     // Mapping of operators to their stake in basis points
     using EnumerableMap for EnumerableMap.AddressToUintMap;
     EnumerableMap.AddressToUintMap private _operatorWeights;  // Target Portfolio holdings map: MyOperatorAddress:TargetStakeInBps
 
-    constructor(address admin) {
+    IEigenLayerContracts eigenLayerContracts;
+
+    constructor(address admin, IEigenLayerContracts _eigenLayerContracts) {
         // The deploying user sets the admin and initial manager
         require(admin != address(0), "Admin address cannot be zero");
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
         _grantRole(MANAGER_ROLE, admin);
+        eigenLayerContracts = _eigenLayerContracts;
     }
 
     // caller must have DEFAULT_ADMIN_ROLE
@@ -41,9 +47,9 @@ contract HoldingsManager is AccessControlEnumerable {
     function setOperator(address operator, uint256 weight) external onlyRole(MANAGER_ROLE) {
         require(operator != address(0), "Invalid operator address");
         
-        if (!_operators.contains(operator)) {
-            MyOperator myOperator = new MyOperator(operator);
-            _operators.set(operator, uint160(address(myOperator)));
+        if (!_stakers.contains(operator)) {
+            MyOperator myOperator = new MyOperator(operator, eigenLayerContracts);
+            _stakers.set(operator, uint160(address(myOperator)));
         }
 
         _operatorWeights.set(operator, weight);
@@ -52,7 +58,7 @@ contract HoldingsManager is AccessControlEnumerable {
     function removeOperator(address operator) external onlyRole(MANAGER_ROLE){
         require(operator != address(0), "Invalid operator address");
         _operatorWeights.remove(operator);
-        _operators.remove(operator);
+        _stakers.remove(operator);
     }
 
     function getOperatorWeight(address operator) external view returns (uint256) {
@@ -75,7 +81,7 @@ contract HoldingsManager is AccessControlEnumerable {
         
         for (uint i = 0; i < length; i++) {
             (address operator, uint256 stake) = _operatorWeights.at(i);
-            operators[i] = MyOperator(address(uint160(_operators.get(operator))));
+            operators[i] = MyOperator(address(uint160(_stakers.get(operator))));
             stakes[i] = stake;
         }
 
@@ -91,6 +97,7 @@ contract HoldingsManager is AccessControlEnumerable {
             (address operator, uint256 weight) = _operatorWeights.at(i);
             operatorInfos[i] = OperatorInfo({
                 operator: operator,
+                staker: address(uint160(_stakers.get(operator))),
                 weight: weight
             });
         }
