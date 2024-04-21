@@ -247,10 +247,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('setOperator').addEventListener('click', async () => {
         const operatorAddress = ethers.utils.parseEther(document.getElementById('operatorAddress').value);
-        const operatorStakeBps = Math.floor(parseFloat(document.getElementById("operatorStake").value));
+        const operatorWeightBps = Math.floor(parseFloat(document.getElementById("operatorWeight").value));
 
         try {
-            const tx = await holdingPercentage.setOperator(operatorAddress, operatorStakeBps, txOptions);
+            const tx = await holdingPercentage.setOperator(operatorAddress, operatorWeightBps, txOptions);
             await tx.wait();
             fetchAll();
         } catch (error) {
@@ -264,10 +264,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const holdingsManagerContract = new ethers.Contract(await vaultContract.holdingsManager(), HoldingsManager_ABI, signer);
 
         const operators = await holdingsManagerContract.getOperatorsInfo();
-        for (let operatorStaker of operators) {
-            console.log(operatorStaker);
+        for (let operatorWeightr of operators) {
+            console.log(operatorWeightr);
 
-            const address = operatorStaker.operator;
+            const address = operatorWeightr.operator;
             
             let metadata = {name: "", logo: "", description: "", website: ""};
             const operatorRecord = operatorsMetadata[chainId][address];
@@ -287,7 +287,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
-            const info = {...metadata, ...operatorStaker};
+            const info = {...metadata, ...operatorWeightr};
         }
     }
 
