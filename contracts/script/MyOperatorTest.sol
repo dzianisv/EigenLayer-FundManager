@@ -25,10 +25,14 @@ contract TestMyOperator is Script {
         console2.log(liquidStakedToken.symbol(), liquidStakedToken.balanceOf(msg.sender));
 
         MyOperator mOperator = ContractsStore.getMyOperator(vm);
+        uint256 amount = 1;
+        console2.log("msg.sender", msg.sender);
+        console2.log("MyOperator", address(mOperator));
 
         vm.startBroadcast();
-        liquidStakedToken.approve(address(mOperator), 1);
-        mOperator.stake(liquidStakedToken, 1, eigenLayerContracts);
+        liquidStakedToken.transfer(address(mOperator), amount);
+        mOperator.stake(liquidStakedToken, amount, eigenLayerContracts);
         vm.stopBroadcast();
+        console2.log("Deposited", amount);
     }
 }

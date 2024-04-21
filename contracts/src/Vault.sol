@@ -79,7 +79,8 @@ contract Vault is ERC4626 {
         // TODO: this is not safe/non-revertable, but this is quick hack to make this work for a demo
         // because msg.sender here is a Staker user, but we need an approval of the current smart-contract address
         // to use asset.approve() and asset.transferFrom()
-        asset.transferFrom(address(this), address(myOperator), amount);
+        // asset.approve(address(myOperator), amount);
+        asset.transfer(address(myOperator), amount);
         myOperator.stake(asset, amount, eigenLayerContracts);
     }
 

@@ -27,15 +27,22 @@ contract TestDeposit is Script {
         ERC20 liquidStakedToken = ContractsStore.getETHxToken(vm);
         uint256 testDeposit = 100;
 
+        console2.log("pre-msg.sender", msg.sender);
+        console2.log("pre-liquidStakedToken.balanceOf()", liquidStakedToken.balanceOf(msg.sender));
+        console2.log("pre-totalDeposited()", vault.totalDeposited());
+        console2.log("pre-totalAssets()", vault.totalAssets());
+        console2.log("pre-balanceOf()", vault.balanceOf(msg.sender));
+
         vm.startBroadcast();
     
         liquidStakedToken.approve(address(vault), testDeposit);
         vault.deposit(testDeposit, msg.sender);
-        
-        console2.log("totalDeposited()", vault.totalDeposited());
-        console2.log("totalAssets()", vault.totalAssets());
-        console2.log("balanceOf()", vault.balanceOf(msg.sender));
-
+    
         vm.stopBroadcast();
+
+        console2.log("post-totalDeposited()", vault.totalDeposited());
+        console2.log("post-totalAssets()", vault.totalAssets());
+        console2.log("post-balanceOf()", vault.balanceOf(msg.sender));
+
     }
 }
