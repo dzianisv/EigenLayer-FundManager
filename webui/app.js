@@ -67,7 +67,7 @@ const HoldingsManager_ABI = [
 const operatorsMetadata = {
     17000: {
         "0xbE4B4Fa92b6767FDa2C8D1db53A286834dB19638": {
-            "metadata": "https://raw.githubusercontent.com/Layr-Labs/eigendata/master/operators/coinbasecloud/metadata.json"
+            metadataUrl: "https://raw.githubusercontent.com/Layr-Labs/eigendata/master/operators/coinbasecloud/metadata.json"
         }
     }
 }
@@ -238,13 +238,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             
        
             let metadata = {name: "", logo: "", description: "", website: ""};
-            const metadataUrl = operatorsMetadata[chainId][address] ? operatorsMetadata[chainId][address].metadata : null;
-            if (metadataUrl) {
-                try { 
-                    metadata = await (await fetch(metadataUrl)).json();
-                    console.log(address, metadata);
-                } catch(err) {
-                    console.error(`failed to retrieve oeprator ${address} on chainId=${chainId} metadata`, err);
+            const operatorRecord = operatorsMetadata[chainId][address];
+            if (operatorRecord) {
+                // use cached
+                if (operatorRecord.metadata) {
+                    metadata = operatorRecord.metadata;
+                } else {
+                    try { 
+                        metadata = await (await fetch(operatorRecord.metadataUrl)).json();
+                        //cache json metadata
+                        operatorRecord.metadata = metadata;
+                        console.log(address, metadata);
+                    } catch(err) {
+                        console.error(`failed to retrieve oeprator ${address} on chainId=${chainId} metadata`, err);
+                    }
                 }
             }
             
@@ -257,11 +264,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const vaultOurShares = await vaultContract.balanceOf(walletAddress);
             const vaultOurAssets = vaultOurShares * vaultSharePrice;
             const perfomanceIndex = 0;
-            
-            let holdingPercentage = 0;
-            if (totalDeposited > 0) {
-                holdingPercentage = (vaultOurAssets / totalDeposited) * 100;
-            }
+            const holdingPercentage = operator.weight;
 
             items.push({
                 ...metadata, address, vaultTotalShares, vaultTotalAssets, vaultSharePrice, vaultOurShares, vaultOurAssets,  holdingPercentage, perfomanceIndex
