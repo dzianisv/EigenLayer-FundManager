@@ -52,7 +52,6 @@ contract TestnetContracts is IEigenLayerContracts {
     function _compareTokenSymbol(string memory a, string memory b) internal pure returns (bool) {
         return keccak256(abi.encodePacked(a)) == keccak256(abi.encodePacked(b));
     }
-    
 
     //TODO: remove in production, rewards simulation
     function rewardsToken() external pure returns (ERC20) {

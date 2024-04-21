@@ -66,6 +66,31 @@ contract AssetManagerTest is Test {
         }
     }
 
+    function test_rewardsYield() public {
+        HoldingsManager holdingManager = vault.holdingsManager();
+        
+        for (uint i = 0; i < 2; i++) {
+            holdingManager.setOperator(address(uint160((0x1 * (i+1)))), 100 * (i+1));
+        }
+
+        uint256 rewardsAmount = 100;
+
+        OperatorInfo[] memory operators = holdingManager.getOperatorsInfo();
+        for (uint i = 0; i  < operators.length; i++) {
+            OperatorInfo memory operator = operators[i];
+            MyOperator staker = MyOperator(operator.staker);
+            
+            // yeild rewards
+            rewardsToken.transfer(operator.staker, rewardsAmount);
+            
+            uint256 vaultRewardsBalance = rewardsToken.balanceOf(address(vault));
+
+            assertEq(staker.rewardAvailable(), rewardsAmount);
+            staker.rewardsClaim(rewardsAmount/2);
+            assertEq(rewardsToken.balanceOf(address(vault)) - vaultRewardsBalance, rewardsAmount / 2);
+        }
+    }
+
     function test_getPortfolio() public {
         HoldingsManager holdingManager = vault.holdingsManager();
 
