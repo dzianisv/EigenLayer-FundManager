@@ -14,7 +14,7 @@ import "./Vault.sol";
 
 contract MyOperator {
     address public operator;
-
+    IEigenLayerContracts eigenLayerContracts;
 
     // modifier onlyVault() {
     //     require(msg.sender == address(vault), "Caller is not Vault contract");
@@ -27,20 +27,23 @@ contract MyOperator {
     // }
 
     constructor(
-        address _operator
+        address _operator, 
+        IEigenLayerContracts _eigenLayerContracts
     ) {
         operator = _operator;
+        eigenLayerContracts = _eigenLayerContracts;
     }
 
-    function stake(ERC20 token, uint256 amount, IEigenLayerContracts eigenLayerContracts) external { 
-        _depositToEigenLayer(token, amount, eigenLayerContracts);
+    // TODO: restrict usage to the vault
+    function stake(ERC20 token, uint256 amount) external { 
+        _depositToEigenLayer(token, amount);
         
         if (!eigenLayerContracts.delegationManager().isDelegated(address(this))) {
-            _delegateToEigenLayer(eigenLayerContracts);
+            _delegateToEigenLayer();
         }
     }
 
-    function _depositToEigenLayer(ERC20 token, uint256 amount, IEigenLayerContracts eigenLayerContracts) private { 
+    function _depositToEigenLayer(ERC20 token, uint256 amount) private { 
         IStrategy strategy = eigenLayerContracts.strategy(token.symbol());
         IStrategyManager strategyManager = eigenLayerContracts.strategyManager();
         token.transferFrom(msg.sender, address(this), amount);
@@ -48,16 +51,17 @@ contract MyOperator {
         strategyManager.depositIntoStrategy(strategy, token, amount);
     }
 
-    function _delegateToEigenLayer(IEigenLayerContracts eigenLayerContracts) private {
+    function _delegateToEigenLayer() private {
         ISignatureUtils.SignatureWithExpiry memory emptySig;
         eigenLayerContracts.delegationManager().delegateTo(operator, emptySig, bytes32(0));
     }
 
-    function unstake(ERC20 token, uint256 amount, IEigenLayerContracts eigenLayerContracts) external {
-        _withdraw(token, amount, eigenLayerContracts);
+    // TODO: restrict usage to the vault
+    function unstake(ERC20 token, uint256 amount) external {
+        _withdraw(token, amount);
     }
 
-    function _withdraw(ERC20 token, uint256 amount, IEigenLayerContracts eigenLayerContracts) private {
+    function _withdraw(ERC20 token, uint256 amount) private {
         address withdrawer = address(msg.sender); //TODO: double check if this works
         address staker = address(this);
 
@@ -100,7 +104,7 @@ contract MyOperator {
         delegationManager.completeQueuedWithdrawal(withdrawal, tokens, 0, true);
     }
 
-    function getRewards(uint256 deposited, IEigenLayerContracts eigenLayerContracts) public view returns (uint256) {
+    function getRewards(uint256 deposited) public view returns (uint256) {
         (IStrategy[] memory strategies, uint256[] memory shares) = eigenLayerContracts.delegationManager().getDelegatableShares(operator);
 
         uint256 amount = 0;
@@ -113,5 +117,16 @@ contract MyOperator {
             reward = amount - deposited;
         }
         return reward;
+    }
+
+    //TODO: ⚠️ rewards simulation function, has to be removed in production
+    function rewardsCaim(uint256 amount) public returns (uint256) {
+        eigenLayerContracts.rewardsToken().transfer(msg.sender, amount);
+        return amount;
+    }
+
+    //TODO: ⚠️ rewards simulation function, has to be removed in production
+    function rewardAvailable() public view returns (uint256) {
+        return eigenLayerContracts.rewardsToken().balanceOf(address(this));
     }
 }

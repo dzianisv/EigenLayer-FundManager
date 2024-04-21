@@ -98,8 +98,7 @@ contract Vault is ERC4626 {
             (address staker, uint256 deposited) = _stakedTokensPortfolio.at(i);
             address operator = MyOperator(staker).operator();
             uint256 rewards = MyOperator(staker).getRewards(
-                deposited,
-                eigenLayerContracts
+                deposited
             );
             allocations[i] = OperatorAllocation({
                 staker: staker,
@@ -115,11 +114,11 @@ contract Vault is ERC4626 {
     function _stake(MyOperator myOperator, uint256 amount) private {
         ERC20 asset = ERC20(asset());
         asset.approve(address(myOperator), amount);
-        myOperator.stake(asset, amount, eigenLayerContracts);
+        myOperator.stake(asset, amount);
     }
 
     function _unstake(MyOperator operator, uint256 amount) private {
-        operator.unstake(ERC20(asset()), amount, eigenLayerContracts);
+        operator.unstake(ERC20(asset()), amount);
     }
 
     function _redistribute() private {

@@ -3,7 +3,9 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
-import {MyOperator} from "./MyOperator.sol";
+
+import "./EigenLayerContracts.sol";
+import "./MyOperator.sol";
 
 
 interface IEigenLayerOperator {
@@ -26,11 +28,14 @@ contract HoldingsManager is AccessControlEnumerable {
     using EnumerableMap for EnumerableMap.AddressToUintMap;
     EnumerableMap.AddressToUintMap private _operatorWeights;  // Target Portfolio holdings map: MyOperatorAddress:TargetStakeInBps
 
-    constructor(address admin) {
+    IEigenLayerContracts eigenLayerContracts;
+
+    constructor(address admin, IEigenLayerContracts _eigenLayerContracts) {
         // The deploying user sets the admin and initial manager
         require(admin != address(0), "Admin address cannot be zero");
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
         _grantRole(MANAGER_ROLE, admin);
+        eigenLayerContracts = _eigenLayerContracts;
     }
 
     // caller must have DEFAULT_ADMIN_ROLE
@@ -42,7 +47,7 @@ contract HoldingsManager is AccessControlEnumerable {
         require(operator != address(0), "Invalid operator address");
         
         if (!_operators.contains(operator)) {
-            MyOperator myOperator = new MyOperator(operator);
+            MyOperator myOperator = new MyOperator(operator, eigenLayerContracts);
             _operators.set(operator, uint160(address(myOperator)));
         }
 

@@ -22,7 +22,7 @@ contract DeployTestOperator is Script {
 
     function run() public {
         vm.startBroadcast();
-        MyOperator mOperator = new MyOperator(ContractsStore.getOperatorAddress(vm));
+        MyOperator mOperator = new MyOperator(ContractsStore.getOperatorAddress(vm), ContractsStore.getEigenLayerContracts(vm));
         vm.stopBroadcast();
 
         vm.writeFile('.data/MyOperator.txt', address(mOperator).toHexString());

@@ -4,6 +4,7 @@ pragma solidity ^0.8.12;
 import "@openzeppelin/contracts/interfaces/IERC4626.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {Test, console2} from "forge-std/Test.sol";
+
 import "../src/Vault.sol";
 import "./TestCoin.sol";
 import "../src/HoldingsManager.sol";
@@ -25,7 +26,7 @@ contract AssetManagerTest is Test {
         liquidStakedToken.mint(msg.sender, 100);
 
         IEigenLayerContracts elContracts = new TestnetContracts();
-        HoldingsManager holdingsManager = new HoldingsManager(address(msg.sender));
+        HoldingsManager holdingsManager = new HoldingsManager(address(msg.sender), elContracts);
         vault = new Vault(liquidStakedToken, holdingsManager, elContracts);
     }
 

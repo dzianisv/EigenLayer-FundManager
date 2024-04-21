@@ -4,11 +4,13 @@ pragma solidity ^0.8.0;
 import "eigenlayer-contracts/src/contracts/core/DelegationManager.sol";
 import "eigenlayer-contracts/src/contracts/core/StrategyManager.sol";
 import "eigenlayer-contracts/src/contracts/interfaces/IStrategy.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 interface IEigenLayerContracts {
     function delegationManager() external view returns (DelegationManager);
     function strategyManager() external view returns (StrategyManager);
     function strategy(string memory tokenSymbol) external view returns (IStrategy);
+    function rewardsToken() external pure returns (ERC20);
 }
 
 // Testnet deployments https://github.com/Layr-Labs/eigenlayer-contracts?tab=readme-ov-file#current-testnet-deployment
@@ -49,5 +51,11 @@ contract TestnetContracts is IEigenLayerContracts {
 
     function _compareTokenSymbol(string memory a, string memory b) internal pure returns (bool) {
         return keccak256(abi.encodePacked(a)) == keccak256(abi.encodePacked(b));
+    }
+    
+
+    //TODO: remove in production, rewards simulation
+    function rewardsToken() external pure returns (ERC20) {
+        return ERC20(address(0x154CA694527015D5DcdDE539A8827bAe1F47A78C));
     }
 }
