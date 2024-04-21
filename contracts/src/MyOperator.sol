@@ -15,62 +15,55 @@ import "./Vault.sol";
 contract MyOperator {
     address public operator;
 
-    Vault vault;
-    ERC20 underlyingToken;
-    DelegationManager delegationManager;
-    StrategyManager strategyManager;
-    IStrategy strategy; // single strategy for now
 
-    modifier onlyVault() {
-        require(msg.sender == address(vault), "Caller is not Vault contract");
-        _;
-    }
+    // modifier onlyVault() {
+    //     require(msg.sender == address(vault), "Caller is not Vault contract");
+    //     _;
+    // }
 
-    modifier onlyDelegated() {
-        require(delegationManager.delegatedTo(address(this)) == operator, "Not deletgated to this operator");
-        _;
-    }
+    // modifier onlyDelegated() {
+    //     require(delegationManager.delegatedTo(address(this)) == operator, "Not deletgated to this operator");
+    //     _;
+    // }
 
     constructor(
-        address _operator,
-        Vault _vault,
-        IEigenLayerContracts _eigenLayerContracts
+        address _operator
     ) {
-        vault = _vault;
         operator = _operator;
-        delegationManager = _eigenLayerContracts.delegationManager();
-        strategyManager = _eigenLayerContracts.strategyManager();
-        underlyingToken = ERC20(_vault.asset());
-        strategy = _eigenLayerContracts.strategy(underlyingToken.symbol());
     }
 
-    function delegate() external onlyVault {
-        if (delegationManager.delegatedTo(address(this)) != operator) {
-            _delegate();
+    function stake(ERC20 token, uint256 amount, IEigenLayerContracts eigenLayerContracts) external { 
+        _depositToEigenLayer(token, amount, eigenLayerContracts);
+        
+        if (!eigenLayerContracts.delegationManager().isDelegated(address(this))) {
+            _delegateToEigenLayer(eigenLayerContracts);
         }
     }
 
-    function stake(uint256 amount) external onlyVault onlyDelegated {
-        _depositIntoEigenLayer(amount);
+    function _depositToEigenLayer(ERC20 token, uint256 amount, IEigenLayerContracts eigenLayerContracts) private { 
+        IStrategy strategy = eigenLayerContracts.strategy(token.symbol());
+        IStrategyManager strategyManager = eigenLayerContracts.strategyManager();
+        token.transferFrom(msg.sender, address(this), amount);
+        token.approve(address(strategyManager), amount); 
+        strategyManager.depositIntoStrategy(strategy, token, amount);
     }
 
-    function unstake(uint256 amount) external onlyVault onlyDelegated {
-        _withdrawFromEigenLayer(amount);
-    }
-
-    function _delegate() private {
+    function _delegateToEigenLayer(IEigenLayerContracts eigenLayerContracts) private {
         ISignatureUtils.SignatureWithExpiry memory emptySig;
-        delegationManager.delegateTo(operator, emptySig, bytes32(0));
+        eigenLayerContracts.delegationManager().delegateTo(operator, emptySig, bytes32(0));
     }
 
-    function _depositIntoEigenLayer(uint256 amount) private { 
-        underlyingToken.approve(address(strategyManager), amount); 
-        strategyManager.depositIntoStrategy(strategy, underlyingToken, amount);
+    function unstake(ERC20 token, uint256 amount, IEigenLayerContracts eigenLayerContracts) external {
+        _withdraw(token, amount, eigenLayerContracts);
     }
 
-    function _withdrawFromEigenLayer(uint256 amount) private {
-        address withdrawer = address(vault);
+    function _withdraw(ERC20 token, uint256 amount, IEigenLayerContracts eigenLayerContracts) private {
+        address withdrawer = address(msg.sender); //TODO: double check if this works
         address staker = address(this);
+
+        IDelegationManager delegationManager = eigenLayerContracts.delegationManager();
+        IStrategy strategy = eigenLayerContracts.strategy(token.symbol());
+
         uint nonce = delegationManager.cumulativeWithdrawalsQueued(staker);
 
         IStrategy[] memory strategies = new IStrategy[](1);

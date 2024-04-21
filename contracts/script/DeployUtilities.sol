@@ -14,32 +14,35 @@ import "../test/TestCoin.sol";
 import {HoldingsManager} from "../src/HoldingsManager.sol";
 import {IEigenLayerContracts, TestnetContracts} from "../src/EigenLayerContracts.sol";
 import {MyOperator} from "../src/MyOperator.sol";
+import "./AddressLibrary.sol";
 
+contract DeployRewardsToken is Script {
+    using AddressLibrary for address;
 
-contract VaultScript is Script {
     function setUp() public {}
 
     function run() public {
-        // uint256 privateKey = vm.envUint("PRIVATE_KEY");
-        // vm.startBroadcast(privateKey);
-
         vm.startBroadcast();
-
         TestCoin rewardsToken = new TestCoin("AVS1 Rewards Token", "AVS1");
         rewardsToken.mint(msg.sender, 100);
-
-        // ETHx @ Honesky: https://holesky.etherscan.io/token/
-        ERC20 liquidStakedToken = ERC20(address(0xB4F5fc289a778B80392b86fa70A7111E5bE0F859));
-
-        IEigenLayerContracts elContracts = new TestnetContracts();
-        HoldingsManager holdingsManager = new HoldingsManager(address(msg.sender));
-        
-        Vault vault = new Vault(liquidStakedToken, holdingsManager);
-        // Coinbase Operator: https://holesky.etherscan.io/address/0xbe4b4fa92b6767fda2c8d1db53a286834db19638
-        MyOperator cbOperator = new MyOperator(address(0xbE4B4Fa92b6767FDa2C8D1db53A286834dB19638), vault, elContracts);
-
-        holdingsManager.setOperator(address(cbOperator), 100000);
-
         vm.stopBroadcast();
+
+        console2.log("Rewards token address", address(rewardsToken));
+        vm.writeFile('.data/RewardsToken.txt', address(rewardsToken).toHexString());
+    }
+}
+
+contract DeployEingenLayerContracts is Script {
+    using AddressLibrary for address;
+
+    function setUp() public {}
+
+    function run() public {
+        vm.startBroadcast();
+        IEigenLayerContracts elContracts = new TestnetContracts();
+        vm.stopBroadcast();
+
+        console2.log("EingenLayerContracts address", address(elContracts));
+        vm.writeFile('.data/IEigenLayerContracts.txt', address(elContracts).toHexString());
     }
 }

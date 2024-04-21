@@ -3,6 +3,8 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
+import {MyOperator} from "./MyOperator.sol";
+
 
 interface IEigenLayerOperator {
     // Example function (assuming what might be relevant)
@@ -11,6 +13,9 @@ interface IEigenLayerOperator {
 
 contract HoldingsManager is AccessControlEnumerable {
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
+
+    using EnumerableMap for EnumerableMap.AddressToUintMap;
+    EnumerableMap.AddressToUintMap private _operators;  // Target Portfolio holdings map: MyOperatorAddress:TargetStakeInBps
 
     // Mapping of operators to their stake in basis points
     using EnumerableMap for EnumerableMap.AddressToUintMap;
@@ -28,14 +33,22 @@ contract HoldingsManager is AccessControlEnumerable {
     // Remove a manager -> revokeRole(MANAGER_RILE, address)
 
     // Set or update an MyOperator's stake
-    function setOperator(address operator, uint256 stake_bps) external onlyRole(MANAGER_ROLE) {
+    function setOperator(address operator, uint256 stakeBps) external onlyRole(MANAGER_ROLE) {
         require(operator != address(0), "Invalid operator address");
-        _operatorStakes.set(operator, stake_bps);
+        require(stakeBps <= 100000, "Invalid BPS");
+        
+        if (!_operators.contains(operator)) {
+            MyOperator myOperator = new MyOperator(operator);
+            _operators.set(operator, uint160(address(myOperator)));
+        }
+
+        _operatorStakes.set(operator, stakeBps);
     }
 
     function removeOperator(address operator) external onlyRole(MANAGER_ROLE){
         require(operator != address(0), "Invalid operator address");
         _operatorStakes.remove(operator);
+        _operators.remove(operator);
     }
 
     function getOperatorStake(address operator) external view returns (uint256) {
@@ -51,14 +64,14 @@ contract HoldingsManager is AccessControlEnumerable {
     }
 
     // Get all operators and their stakes
-    function getAllOperatorStakes() public view returns (address[] memory, uint256[] memory) {
+    function getAllOperatorStakes() public view returns (MyOperator[] memory, uint256[] memory) {
         uint256 length = _operatorStakes.length();
-        address[] memory operators = new address[](length);
+        MyOperator[] memory operators = new MyOperator[](length);
         uint256[] memory stakes = new uint256[](length);
         
         for (uint i = 0; i < length; i++) {
             (address operator, uint256 stake) = _operatorStakes.at(i);
-            operators[i] = operator;
+            operators[i] = MyOperator(address(uint160(_operators.get(operator))));
             stakes[i] = stake;
         }
 
