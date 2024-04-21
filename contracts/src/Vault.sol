@@ -42,18 +42,18 @@ contract Vault is ERC4626 {
     }
 
     function withdraw(
-        uint256 assets,
-        address receiver,
-        address owner
-    ) public override returns (uint256) {
+        uint256 /* assets */,
+        address /* receiver */,
+        address /* owner */
+    ) public pure override returns (uint256) {
         revert("withdraw function is not supported");
     }
 
     function redeem(
-        uint256 shares,
-        address receiver,
-        address owner
-    ) public override returns (uint256) {
+        uint256 /* shares */,
+        address /* receiver */,
+        address /* owner */
+    ) public pure override returns (uint256) {
         revert("Redeem function is not supported");
     }
 

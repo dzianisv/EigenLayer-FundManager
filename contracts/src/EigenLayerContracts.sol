@@ -14,15 +14,15 @@ interface IEigenLayerContracts {
 // Testnet deployments https://github.com/Layr-Labs/eigenlayer-contracts?tab=readme-ov-file#current-testnet-deployment
 contract TestnetContracts is IEigenLayerContracts {
 
-    function delegationManager() external view returns (DelegationManager) {
+    function delegationManager() external pure returns (DelegationManager) {
         return DelegationManager(address(0xA44151489861Fe9e3055d95adC98FbD462B948e7));
     }
 
-    function strategyManager() external view returns (StrategyManager) {
+    function strategyManager() external pure returns (StrategyManager) {
         return StrategyManager(address(0xdfB5f6CE42aAA7830E94ECFCcAd411beF4d4D5b6));
     }
 
-    function strategy(string memory tokenSymbol) external view returns (IStrategy) {
+    function strategy(string memory tokenSymbol) external pure returns (IStrategy) {
         if (_compareTokenSymbol(tokenSymbol, "stETH")) {
             return IStrategy(address(0x7D704507b76571a51d9caE8AdDAbBFd0ba0e63d3));
         } else if (_compareTokenSymbol(tokenSymbol, "rETH")) {
@@ -43,9 +43,8 @@ contract TestnetContracts is IEigenLayerContracts {
             return IStrategy(address(0xaccc5A86732BE85b5012e8614AF237801636F8e5));
         } else if (_compareTokenSymbol(tokenSymbol, "ankrETH")) {
             return IStrategy(address(0x7673a47463F80c6a3553Db9E54c8cDcd5313d0ac));
-        } else {
-            require(true, "Invalid token symbol");
         }
+        revert("Invalid token symbol");
     }
 
     function _compareTokenSymbol(string memory a, string memory b) internal pure returns (bool) {

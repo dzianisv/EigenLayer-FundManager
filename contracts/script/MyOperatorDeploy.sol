@@ -21,9 +21,6 @@ contract DeployTestOperator is Script {
     function setUp() public {}
 
     function run() public {
-        IEigenLayerContracts eigenLayerContracts = ContractsStore.getEigenLayerContracts(vm);
-        ERC20 liquidStakedToken = ContractsStore.getETHxToken(vm);
-
         vm.startBroadcast();
         MyOperator mOperator = new MyOperator(ContractsStore.getOperatorAddress(vm));
         vm.stopBroadcast();

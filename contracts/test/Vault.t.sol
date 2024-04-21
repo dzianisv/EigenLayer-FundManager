@@ -29,7 +29,7 @@ contract AssetManagerTest is Test {
         vault = new Vault(liquidStakedToken, holdingsManager, elContracts);
     }
 
-    function test_ERC20UnderlyingAsset() public {
+    function test_ERC20UnderlyingAsset() public view {
         require(vault.asset() == address(liquidStakedToken));
     }
 
@@ -41,7 +41,7 @@ contract AssetManagerTest is Test {
         assertEq(vault.totalDeposited(), 10);
     }
 
-    function test_minting() public {
+    function test_minting() public view {
         assertEq(liquidStakedToken.balanceOf(msg.sender), 100);
         assertEq(rewardsToken.balanceOf(msg.sender), 100);
     }

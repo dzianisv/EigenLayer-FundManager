@@ -21,7 +21,6 @@ library AddressLibrary {
         );
 
         uint160 total = 0;
-        uint160 base = 1;
 
         // Start from the end of the string and ignore the '0x' prefix
         for (uint256 i = 2; i < strBytes.length; i++) {
