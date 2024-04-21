@@ -145,7 +145,7 @@ contract Vault is ERC4626 {
 
             if (targetStake > currentStake) {
                 uint256 amountToStake = targetStake - currentStake;
-                if (availableForTradeAssets() > amountToStake) {
+                if (availableForTradeAssets() >= amountToStake) {
                     _stake(MyOperator(myOperatorAddress), amountToStake);
                     _stakedTokensPortfolio.set(myOperatorAddress, targetStake); // Update the portfolio map to reflect the new stake
                 } else {
@@ -160,7 +160,7 @@ contract Vault is ERC4626 {
                 _unstake(MyOperator(myOperatorAddress), amountToUnStake);
                 if (targetStake == 0) {
                     _stakedTokensPortfolio.remove(myOperatorAddress); // Remove operator from portfolio if no longer needed
-                } else {
+                } else {`
                     _stakedTokensPortfolio.set(myOperatorAddress, targetStake); // Update the portfolio
                 }
                 */
@@ -177,7 +177,7 @@ contract Vault is ERC4626 {
                 !_stakedTokensPortfolio.contains(address(myOperator)) &&
                 targetStake > 0
             ) {
-                if (availableForTradeAssets() > targetStake) {
+                if (availableForTradeAssets() <= targetStake) {
                     emit OutOfAssets(targetStake, availableForTradeAssets());
                     break;
                 }
