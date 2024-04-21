@@ -231,6 +231,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Withdraw
     document.getElementById('withdrawBtn').addEventListener('click', async () => {
+        alert("not implemented!");
         const amount = ethers.utils.parseEther(document.getElementById('amountInput').value);
         try {
             const tx = await vaultContract.withdraw(amount, await signer.getAddress(), await signer.getAddress(), txOptions);
@@ -247,6 +248,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const operatorWeight = Math.floor(parseFloat(document.getElementById("operatorWeight").value));
 
         try {
+            console.log('setOperator', operatorAddress, operatorWeight);
             await waitForTransaction(() => holdingPercentage.setOperator(operatorAddress, operatorWeight, txOptions), "set operator weight");
             fetchAll();
         } catch (error) {
