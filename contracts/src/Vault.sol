@@ -128,6 +128,7 @@ contract Vault is ERC4626 {
             MyOperator[] memory operators,
             uint256[] memory operatorsWeights
         ) = holdingsManager.getOperatorsWeights();
+
         uint256 availableForTrade = availableForTradeAssets();
 
         // Iterate through the portfolio to adjust or remove stakes
@@ -193,9 +194,7 @@ contract Vault is ERC4626 {
         uint256 availableForTrade
     ) private view returns (uint256) {
         if (holdingsManager.existsOperator(operatorAddress)) {
-            return
-                (availableForTrade *
-                    holdingsManager.getOperatorWeight(operatorAddress)) / 10000;
+            return (availableForTrade * holdingsManager.getOperatorWeight(operatorAddress)) / 10000;
         }
         return 0; // Return 0 if the operator is not found in the target distribution
     }

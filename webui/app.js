@@ -1,6 +1,6 @@
 const networks = {
     31337: {name: "localnet", contract: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"},
-    17000: {name: "Holesky", contract: "0xfb9ccd7c1df1968393ec7fad395ce617cf23811d", explorer: "https://holesky.etherscan.io/"},
+    17000: {name: "Holesky", contract: "0x93fb5d1137e8a9a945dc71ac22a2a5dd1cea108d", explorer: "https://holesky.etherscan.io/"},
 };
 
 const txOptions = {
@@ -228,7 +228,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const amount = ethers.utils.parseEther(document.getElementById('amountInput').value);
         try {
             await waitForTransaction(async () => await assetContract.approve(contractAddress, amount), assetSymbol + " approve");
-            await waitForTransaction(async () => await assetContract.approve(contractAddress, amount), "deposit");
+            await waitForTransaction(async () => await vaultContract.deposit(amount, walletAddress), "deposit");
             fetchAll();
         } catch (error) {
             console.error("Deposit failed", error);
