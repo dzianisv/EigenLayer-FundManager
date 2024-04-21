@@ -25,6 +25,9 @@ values we can offer
 ## Contract System Desgin 
 ![](docs/SystemDesign.png)
 
+## Multichain System Design
+![](docs/SystemDesign-CrossChain.svg)
+
 
 # Technologies Used
 - MaterializeCSS
