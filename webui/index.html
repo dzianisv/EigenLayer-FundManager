@@ -16,7 +16,7 @@
 <body>
     <nav>
         <div class="nav-wrapper">
-            <span class="brand-logo">EigenLayer Fund</span>
+            <span class="brand-logo">📈 EigenLayer Fund</span>
             <ul id="nav-mobile" class="right">
                 <li><a id="networkInfo"><span class="material-icons">signal_cellular_alt</span><span id="networkDetails"></span></a></li>
                 <li><a id="walletInfo"><span class="material-icons">wallet</span><span id="walletAddress"></span></a></li>
@@ -253,8 +253,7 @@
                     <th>Our Shares</th>
                     <th>Total Shares</th>
                     <th>Total Assets locked</th>
-                    <th>Holding %</th>
-                    <th>Perfomance Index</th>
+                    <th>Weight</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -276,8 +275,7 @@
                 <td>${ethers.utils.formatEther(item.vaultOurShares)}</td>
                 <td>${ethers.utils.formatEther(item.vaultTotalShares)}</td>
                 <td>${ethers.utils.formatEther(item.vaultTotalAssets)}</td>
-                <td>${item.holdingPercentage.toFixed(2)}%</td>
-                <td>${item.perfomanceIndex}</td>
+                <td>${item.holdingPercentage}%</td>
                 <td><button id="deleteButton" class="btn btn-danger mt-2"><i class="material-icons">delete</i></button></td>
                 </tr>`;
 

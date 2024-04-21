@@ -257,11 +257,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const vaultOurShares = await vaultContract.balanceOf(walletAddress);
             const vaultOurAssets = vaultOurShares * vaultSharePrice;
             const perfomanceIndex = 0;
-            
-            let holdingPercentage = 0;
-            if (totalDeposited > 0) {
-                holdingPercentage = (vaultOurAssets / totalDeposited) * 100;
-            }
+            const holdingPercentage = operator.weight;
 
             items.push({
                 ...metadata, address, vaultTotalShares, vaultTotalAssets, vaultSharePrice, vaultOurShares, vaultOurAssets,  holdingPercentage, perfomanceIndex
