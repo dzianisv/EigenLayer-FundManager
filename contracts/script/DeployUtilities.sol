@@ -15,6 +15,8 @@ import {HoldingsManager} from "../src/HoldingsManager.sol";
 import {IEigenLayerContracts, TestnetContracts} from "../src/EigenLayerContracts.sol";
 import {MyOperator} from "../src/MyOperator.sol";
 import "./AddressLibrary.sol";
+import "./ContractsStore.sol";
+import "../test/Exchange.sol";
 
 contract DeployEingenLayerContracts is Script {
     using AddressLibrary for address;
@@ -27,7 +29,10 @@ contract DeployEingenLayerContracts is Script {
         vm.stopBroadcast();
 
         console2.log("EingenLayerContracts address", address(elContracts));
-        vm.writeFile('.data/IEigenLayerContracts.txt', address(elContracts).toHexString());
+        vm.writeFile(
+            ".data/IEigenLayerContracts.txt",
+            address(elContracts).toHexString()
+        );
     }
 }
 contract DeployRewardsToken is Script {
@@ -37,12 +42,15 @@ contract DeployRewardsToken is Script {
 
     function run() public {
         vm.startBroadcast();
-        MintableToken token = new MintableToken("EigenLayer Rewards Coin", "AVS1");
+        MintableToken token = new MintableToken(
+            "EigenLayer Rewards Coin",
+            "AVS1"
+        );
         token.mint(msg.sender, 100);
         vm.stopBroadcast();
 
         console2.log("Contract address", address(token));
-        vm.writeFile('.data/RewardsToken.txt', address(token).toHexString());
+        vm.writeFile(".data/RewardsToken.txt", address(token).toHexString());
     }
 }
 
@@ -57,6 +65,28 @@ contract DeployUSDC is Script {
         vm.stopBroadcast();
 
         console2.log("Contract address", address(token));
-        vm.writeFile('.data/USDC.txt', address(token).toHexString());
+        vm.writeFile(".data/USDC.txt", address(token).toHexString());
+    }
+}
+
+contract DeployExchange is Script {
+    using AddressLibrary for address;
+
+    function setUp() public {}
+
+    function run() public {
+        MintableToken rewardsToken = ContractsStore.getRewardsToken(vm);
+        ERC20 liquidStakingToken = ContractsStore.getETHxToken(vm);
+
+        vm.startBroadcast();
+        uint256 assets = liquidStakingToken.decimals()/100;
+        IExchange token = new TestExchange();
+        liquidStakingToken.transfer(address(token), assets);
+        rewardsToken.mint(address(token), assets);
+
+        vm.stopBroadcast();
+
+        console2.log("Contract address", address(token));
+        vm.writeFile(".data/Exchange.txt", address(token).toHexString());
     }
 }

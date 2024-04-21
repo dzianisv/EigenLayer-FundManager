@@ -10,7 +10,6 @@ import "./MintableToken.sol";
 import "../src/HoldingsManager.sol";
 import "../src/EigenLayerContracts.sol";
 import "../src/MyOperator.sol";
-import "./Exchange.sol";
 
 contract AssetManagerTest is Test {
     Vault public vault;
