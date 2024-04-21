@@ -1,6 +1,6 @@
 const networks = {
     31337: {name: "localnet", contract: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"},
-    17000: {name: "Holesky", contract: "0x1A75E43149A18CFfacA68b86e45df3E47A300149", explorer: "https://holesky.etherscan.io/address"},
+    17000: {name: "Holesky", contract: "0x16a08ec6ec14e17c97bbe0bbd4fb9d82f719928a", explorer: "https://holesky.etherscan.io/address"},
 };
 
 const txOptions = {
@@ -134,7 +134,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const vaultContract = new ethers.Contract(contractAddress, ERC4626_ABI, signer);
     const assetSymbol = await vaultContract.asset();
     const assetTokenContract = new ethers.Contract(assetSymbol, ERC20_ABI, signer);
-    const holdingsManagerContract = new ethers.Contract(await vaultContract.holdingsManager(), HodlingsManager_ABI, signer);
 
     // Fetch balance and display
     async function fetchShares() {
@@ -224,11 +223,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     async function updateHoldingsTable() {
-        console.log('updateHoldingsTable')
-        // Fetch the vaults
+        console.log('updateHoldingsTable');
 
         let items = [];
 
+        const holdingsManagerContract = new ethers.Contract(await vaultContract.holdingsManager(), HodlingsManager_ABI, signer);
         const operators = await holdingsManagerContract.getOperatorsInfo();
         for (let operator of operators) {
             console.log(operator);

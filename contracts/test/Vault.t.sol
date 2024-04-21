@@ -46,10 +46,13 @@ contract AssetManagerTest is Test {
         assertEq(rewardsToken.balanceOf(msg.sender), 100);
     }
 
-    function test_holdingManager() public view {
+    function test_holdingManager() public {
         HoldingsManager holdingManager = vault.holdingsManager();
-        holdingManager.setOperator(0x1, 100);
-        holdingManager.setOperator(0x2, 200);
+        holdingManager.setOperator(address(0x1), 100);
+        
+        for (uint i = 0; i < 2; i++) {
+            holdingManager.setOperator(address(uint160((0x1 * (i+1)))), 100 * (i+1));
+        }
 
         OperatorInfo[] memory operators = holdingManager.getOperatorsInfo();
         for (uint i = 0; i  < operators.length; i++) {
@@ -57,10 +60,9 @@ contract AssetManagerTest is Test {
             console2.log(operator.operator, operator.weight);
         }
 
-        assertEq(operators[0].operator, 0x1);
-        assertEq(operators[0].weight, 100);
-
-        assertEq(operators[1].operator, 0x2);
-        assertEq(operators[1].weight, 200);
+        for (uint i = 0; i < 2; i++) {
+            assertEq(operators[i].operator, address(uint160((0x1 * (i+1)))));
+            assertEq(operators[0].weight, 100 * i);
+        }
     }
 }
