@@ -6,23 +6,23 @@ import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {Test, console2} from "forge-std/Test.sol";
 
 import "../src/Vault.sol";
-import "./TestCoin.sol";
+import "./MintableToken.sol";
 import "../src/HoldingsManager.sol";
 import "../src/EigenLayerContracts.sol";
 import "../src/MyOperator.sol";
 
 contract AssetManagerTest is Test {
     Vault public vault;
-    TestCoin public rewardsToken;
-    TestCoin public liquidStakedToken;
+    MintableToken public rewardsToken;
+    MintableToken public liquidStakedToken;
 
     function setUp() public {
         vm.startPrank(msg.sender);
         
-        rewardsToken = new TestCoin("AVS1 Rewards Token", "AVS1");
+        rewardsToken = new MintableToken("EigenLayer Rewards Token", "AVS1");
         rewardsToken.mint(msg.sender, 100);
 
-        liquidStakedToken = new TestCoin("Liquid Staked ETH", "lsETH");
+        liquidStakedToken = new MintableToken("Liquid Staked ETH", "lsETH");
         liquidStakedToken.mint(msg.sender, 100);
 
         IEigenLayerContracts elContracts = new TestnetContracts();

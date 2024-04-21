@@ -153,7 +153,7 @@ contract Vault is ERC4626 {
             } else if (currentStake > targetStake) {
                 //TODO: ⚠️ unstaking is not immediate action
                 continue;
-
+                /*
                 uint256 amountToUnStake = currentStake - targetStake;
                 _unstake(MyOperator(myOperatorAddress), amountToUnStake);
                 if (targetStake == 0) {
@@ -161,6 +161,7 @@ contract Vault is ERC4626 {
                 } else {
                     _stakedTokensPortfolio.set(myOperatorAddress, targetStake); // Update the portfolio
                 }
+                */
             }
         }
 

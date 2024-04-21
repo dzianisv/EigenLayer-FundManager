@@ -10,7 +10,7 @@ import {Script, console2} from "forge-std/Script.sol";
 import "./AddressLibrary.sol";
 import "./ContractsStore.sol";
 import "../src/Vault.sol";
-import "../test/TestCoin.sol";
+import "../test/MintableToken.sol";
 import "../src/HoldingsManager.sol";
 import "../src/EigenLayerContracts.sol";
 import "../src/MyOperator.sol";

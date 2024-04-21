@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/interfaces/IERC4626.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 import {Vault} from "../src/Vault.sol";
-import "../test/TestCoin.sol";
+import "../test/MintableToken.sol";
 import {HoldingsManager} from "../src/HoldingsManager.sol";
 import {IEigenLayerContracts, TestnetContracts} from "../src/EigenLayerContracts.sol";
 import {MyOperator} from "../src/MyOperator.sol";
@@ -23,7 +23,7 @@ contract DeployRewardsToken is Script {
 
     function run() public {
         vm.startBroadcast();
-        TestCoin rewardsToken = new TestCoin("AVS1 Rewards Token", "AVS1");
+        MintableToken rewardsToken = new MintableToken("AVS1 Rewards Token", "AVS1");
         rewardsToken.mint(msg.sender, 100);
         vm.stopBroadcast();
 

@@ -22,11 +22,13 @@ contract AddOperatorScript is Script {
 
     function run() public {
         Vault vault = ContractsStore.getVault(vm);
-        HoldingsManager holdingsManager = vault.holdingsManager();
-     
+
         vm.startBroadcast();
-        holdingsManager.setOperator(address(0x5e29b3107937b4675FdDF113EDC5530498B3Fb70), 10);
-        holdingsManager.setOperator(address(0x4E59E88207Ac04e6615D79Ae565E877DD80BCF8e), 10);
+        OperatorInfo[] memory operators = vault.holdingsManager().getOperatorsInfo();
+        for (uint i  = 0; i < operators.length; i++) {
+            MintableToken(address(ContractsStore.getEigenLayerContracts(vm).rewardsToken())).mint(operators[i].staker, 10);
+        }
+
         vm.stopBroadcast();
     }
 }

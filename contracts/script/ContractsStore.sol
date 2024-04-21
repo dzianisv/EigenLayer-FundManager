@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 import {Script, console2, VmSafe} from "forge-std/Script.sol";
 
 import "../src/Vault.sol";
-import "../test/TestCoin.sol";
+import "../test/MintableToken.sol";
 import "../src/HoldingsManager.sol";
 import "../src/EigenLayerContracts.sol";
 import "./AddressLibrary.sol";
