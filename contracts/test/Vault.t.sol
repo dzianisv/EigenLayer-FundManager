@@ -8,7 +8,7 @@ import "../src/Vault.sol";
 import "./TestCoin.sol";
 import "../src/HoldingsManager.sol";
 import "../src/EigenLayerContracts.sol";
-
+import "../src/MyOperator.sol";
 
 contract AssetManagerTest is Test {
     Vault public vault;
