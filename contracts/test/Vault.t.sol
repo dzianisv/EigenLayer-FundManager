@@ -73,20 +73,23 @@ contract AssetManagerTest is Test {
             holdingManager.setOperator(address(uint160((0x1 * (i+1)))), 100 * (i+1));
         }
 
-        uint256 rewardsAmount = 100;
+        
 
         OperatorInfo[] memory operators = holdingManager.getOperatorsInfo();
         for (uint i = 0; i  < operators.length; i++) {
+            uint256 rewardsAmount = 100 * (i+1);
             OperatorInfo memory operator = operators[i];
             MyOperator staker = MyOperator(operator.staker);
             
-            // yeild rewards
+            // yeild rewards on the OperatorStaker contract
             rewardsToken.transfer(operator.staker, rewardsAmount);
-            
+            // get the rewards tokens count on the Vault contract
             uint256 vaultRewardsBalance = rewardsToken.balanceOf(address(vault));
-
+            // get the amount of the rewards tokens on the balance of the OperatorStaker contract
             assertEq(staker.rewardAvailable(), rewardsAmount);
-            staker.rewardsClaim(rewardsAmount/2);
+            // claim/withdraw rewards tokens from the StakerOperator contract
+            staker.rewardsClaim(address(vault), rewardsAmount / 2);
+            // check that claimed rewards arived to the Vault contract
             assertEq(rewardsToken.balanceOf(address(vault)) - vaultRewardsBalance, rewardsAmount / 2);
         }
     }

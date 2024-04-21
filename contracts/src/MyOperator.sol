@@ -120,8 +120,8 @@ contract MyOperator {
     }
 
     //TODO: ⚠️ rewards simulation function, has to be removed in production
-    function rewardsClaim(uint256 amount) public returns (uint256) {
-        eigenLayerContracts.rewardsToken().transfer(msg.sender, amount);
+    function rewardsClaim(address receiver, uint256 amount) public returns (uint256) {
+        eigenLayerContracts.rewardsToken().transfer(receiver, amount);
         return amount;
     }
 
