@@ -255,7 +255,6 @@
                     <th>My Shares</th>
                     <th>Total Shares</th>
                     <th>Total Assets locked</th>
-                    <th>Weight</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -274,12 +273,11 @@
                 const row = `<tr>
                     <td><a href="${item.url}"><img src="${item.logo}" height=48 width=48 style="margin-bottom: -10;" />${item.name}</td>
                     <td><a href="https://holesky.etherscan.io/address/${item.address}">${item.address}</a></td>
-                    <td>${item.deposited}</td>
+                    <td>${ethers.utils.formatEther(item.deposited)} ${item.assetSymbol}</td>
                     <td>${item.rewards}</td>
                     <td>${ethers.utils.formatEther(item.vaultOurShares)}</td>
                     <td>${ethers.utils.formatEther(item.vaultTotalShares)}</td>
-                    <td>${ethers.utils.formatEther(item.vaultTotalAssets)}</td>
-                    <td>${item.holdingPercentage}%</td>
+                    <td>${ethers.utils.formatEther(item.vaultTotalAssets)} ${item.assetSymbol}</td>
                     <td><button id="deleteButton" class="btn btn-danger mt-2"><i class="material-icons">delete</i></button></td>
                 </tr>`;
 

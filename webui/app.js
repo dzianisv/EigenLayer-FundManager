@@ -1,6 +1,6 @@
 const networks = {
     31337: {name: "localnet", contract: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"},
-    17000: {name: "Holesky", contract: "0x0d1fee466b57524e1d26f385e881fb737664c9c2", explorer: "https://holesky.etherscan.io/address"},
+    17000: {name: "Holesky", contract: "0xf40bfe3bef3857c774eb821294937e06e4680563", explorer: "https://holesky.etherscan.io/address"},
 };
 
 const txOptions = {
@@ -169,8 +169,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const contractAddress = network.contract;
 
     const vaultContract = new ethers.Contract(contractAddress, ERC4626_ABI, signer);
-    const assetSymbol = await vaultContract.asset();
-    const assetTokenContract = new ethers.Contract(assetSymbol, ERC20_ABI, signer);
+    const assetAddress = await vaultContract.asset();
+    const assetContract = new ethers.Contract(assetAddress, ERC20_ABI, signer);
+    const assetSymbol = await assetContract.symbol();
 
     // Fetch balance and display
     async function fetchShares() {
@@ -183,13 +184,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Fetch balance and display
     async function fetchAssets() {
         const balance = await vaultContract.totalAssets();
-        const symbol = await assetTokenContract.symbol();
+        const symbol = await assetContract.symbol();
         updateInvestedAssets(balance, symbol);
     }
 
     async function fetchBalance() {
-        const balance = await assetTokenContract.balanceOf(walletAddress);
-        const symbol = await assetTokenContract.symbol();
+        const balance = await assetContract.balanceOf(walletAddress);
+        const symbol = await assetContract.symbol();
         updateWalletAssets(balance, symbol);
     }
 
@@ -212,7 +213,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             {
                 console.log("Approve", amount);
-                let tx = await assetTokenContract.approve(contractAddress, amount);
+                let tx = await assetContract.approve(contractAddress, amount);
                 console.log("Watingin for the transactoin", tx);
                 console.log("Approved", await tx.wait());
             }
@@ -264,7 +265,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const operators = await holdingsManagerContract.getOperatorsInfo();
         for (let operatorStaker of operators) {
-            console.log(operator);
+            console.log(operatorStaker);
 
             const address = operatorStaker.operator;
             
@@ -294,10 +295,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('updateHoldingsTable');
 
         let items = [];
-
+        
         const portfolioPositions = await vaultContract.getPortfolio();
         for (let portfolioPosition of portfolioPositions) {
-            console.log(operator);
+            console.log(portfolioPosition);
 
             const address = portfolioPosition.operator;
             
@@ -338,7 +339,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 vaultOurShares, 
                 vaultOurAssets,  
                 deposited, 
-                rewards
+                rewards,
+                assetSymbol,
             });
         }
         updateHoldings(items);
