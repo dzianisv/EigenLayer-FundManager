@@ -26,13 +26,16 @@ contract AddLiqudityToExchange is Script {
     function run() public {
         ERC20 liquidStakingToken = LocalContractsStore.getETHxToken(vm);
         MintableToken rewardsToken = LocalContractsStore.getRewardsToken(vm);
-        uint256 assets = liquidStakingToken.decimals()/10;
-        IExchange token = LocalContractsStore.getExchnage(vm);
+        uint256 assets = 1000000000;
+        IExchange exchange = LocalContractsStore.getExchnage(vm);
 
         vm.startBroadcast();
        
-        liquidStakingToken.transfer(address(token), assets);
-        rewardsToken.mint(address(token), assets);
+        liquidStakingToken.transfer(address(exchange), assets);
+        rewardsToken.mint(address(exchange), assets);
+
         vm.stopBroadcast();
+    
+        console2.log("ETHx exchange balance", liquidStakingToken.balanceOf(address(exchange)));
     }
 }

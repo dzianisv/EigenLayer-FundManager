@@ -216,7 +216,8 @@ contract Vault is ERC4626 {
 
             // ✅ swap rewards token to the liqudity token and restake it again!
             ERC20 rewardsToken = staker.rewardsAsset();
-            reinvested += contractsDirectory.exchange().swap(address(this), address(this), staker.rewardsAsset(), ERC20(asset()), rewardsToken.balanceOf(address(this)));
+            rewardsToken.approve(address(contractsDirectory.exchange()), rewardsToken.balanceOf(address(this))); 
+            reinvested += contractsDirectory.exchange().swap(address(this), address(this), rewardsToken, ERC20(asset()), rewardsToken.balanceOf(address(this)));
         }
 
         _redistribute();
