@@ -69,4 +69,20 @@ curl -L https://foundry.paradigm.xyz | bash
 1. `cd webui && python3 -m http.server`
 2. Open [localhost:8000](http://localhost:8000)
 
+# Useful information
 
+- What is the EigenLayer Pod? According to the context provided, an EigenPod is a smart contract managed by users, designed to facilitate the EigenLayer protocol in monitoring and managing balance and withdrawal statuses. Here are some key points about EigenPods:
+
+    - You can repoint any number of validators to a single EigenPod 
+    - An Ethereum address can only deploy a single EigenPod
+    - The address that deploys an EigenPod becomes the owner of the contract and gains permission for restaking and withdrawal operations
+    - Ownership of an EigenPod cannot be transferred 
+    - To create an EigenPod, you need to:
+        - Open the EigenLayer App at https://app.eigenlayer.xyz/ and connect your Web3 wallet, making sure you are connected to Ethereum mainnet 
+        - If successful, you should receive a confirmation and the EigenPod Address will be displayed
+So in summary, an EigenPod is a user-controlled smart contract that acts as the interface between a user's validators and the EigenLayer protocol, allowing the user to manage their staking balance and withdrawals within the EigenLayer ecosystem [3]. It is a key component for participating in EigenLayer's restaking and delegation features.
+- How to get testnet ETH and stETH? 
+    - https://holesky-faucet.pk910.de/ - testnet ETH has to be mined in the browser
+    - Or https://www.holeskyfaucet.io/ - requires yubikey for associate an address with identity
+    - Or https://faucet.quicknode.com/ethereum/holesky requires 0.001 ETH on the eth2 mainnet
+    - Then swap holETH to stETH on https://stake-holesky.testnet.fi/
