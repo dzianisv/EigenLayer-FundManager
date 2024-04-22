@@ -12,10 +12,10 @@ import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {Vault} from "../src/Vault.sol";
 import "../test/MintableToken.sol";
 import {HoldingsManager} from "../src/HoldingsManager.sol";
-import {IEigenLayerContracts, TestnetContracts} from "../src/EigenLayerContracts.sol";
+import {IContractsDirectory, TestnetContracts} from "../src/ContractsDirectory.sol";
 import {MyOperator} from "../src/MyOperator.sol";
 import "./AddressLibrary.sol";
-import "./ContractsStore.sol";
+import "./LocalContractsStore.sol";
 import "../test/Exchange.sol";
 
 contract DeployRewardsToken is Script {
@@ -58,8 +58,8 @@ contract DeployExchange is Script {
     function setUp() public {}
 
     function run() public {
-        MintableToken rewardsToken = ContractsStore.getRewardsToken(vm);
-        ERC20 liquidStakingToken = ContractsStore.getETHxToken(vm);
+        MintableToken rewardsToken = LocalContractsStore.getRewardsToken(vm);
+        ERC20 liquidStakingToken = LocalContractsStore.getETHxToken(vm);
 
         vm.startBroadcast();
         uint256 assets = liquidStakingToken.decimals()/100;

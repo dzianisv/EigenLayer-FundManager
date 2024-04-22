@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 
 import "eigenlayer-contracts/src/contracts/interfaces/IStrategy.sol";
 
-import "./EigenLayerContracts.sol";
+import "./ContractsDirectory.sol";
 import "./HoldingsManager.sol";
 import "./MyOperator.sol";
 
@@ -24,7 +24,7 @@ struct OperatorAllocation {
 contract Vault is ERC4626 {
     // Assuming HoldingsManager is defined elsewhere in your project
     HoldingsManager public holdingsManager;
-    IEigenLayerContracts public contractsStore;
+    IContractsDirectory public contractsDirectory;
 
 
     using EnumerableMap for EnumerableMap.AddressToUintMap;
@@ -37,7 +37,7 @@ contract Vault is ERC4626 {
     constructor(
         IERC20Metadata _underlyingAsset,
         HoldingsManager _holdingsManager,
-        IEigenLayerContracts _contractsStore
+        IContractsDirectory _contractsDirectory
     )
         ERC4626(_underlyingAsset)
         ERC20(
@@ -46,7 +46,7 @@ contract Vault is ERC4626 {
         )
     {
         holdingsManager = _holdingsManager;
-        contractsStore = _contractsStore;
+        contractsDirectory = _contractsDirectory;
     }
 
     function availableForTradeAssets() public view returns (uint256) {
@@ -216,7 +216,7 @@ contract Vault is ERC4626 {
 
             // ✅ swap rewards token to the liqudity token and restake it again!
             ERC20 rewardsToken = staker.rewardsAsset();
-            reinvested += contractsStore.exchange().swap(address(this), address(this), staker.rewardsAsset(), ERC20(asset()), rewardsToken.balanceOf(address(this)));
+            reinvested += contractsDirectory.exchange().swap(address(this), address(this), staker.rewardsAsset(), ERC20(asset()), rewardsToken.balanceOf(address(this)));
         }
 
         _redistribute();

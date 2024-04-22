@@ -7,15 +7,15 @@ import {Script, console2, VmSafe} from "forge-std/Script.sol";
 import "../src/Vault.sol";
 import "../test/MintableToken.sol";
 import "../src/HoldingsManager.sol";
-import "../src/EigenLayerContracts.sol";
+import "../src/ContractsDirectory.sol";
 import "./AddressLibrary.sol";
 
-library ContractsStore {
+library LocalContractsStore {
     using AddressLibrary for string;
     using AddressLibrary for address;
 
-    function getEigenLayerContracts(VmSafe vm) external view returns (IEigenLayerContracts) {
-        return IEigenLayerContracts(vm.readFile(".data/EigenLayerContracts.txt").toAddress());
+    function getContractsDirectory(VmSafe vm) external view returns (IContractsDirectory) {
+        return IContractsDirectory(vm.readFile(".data/ContractsDirectory.txt").toAddress());
     }
 
     function getVault(VmSafe vm) external view returns (Vault) {

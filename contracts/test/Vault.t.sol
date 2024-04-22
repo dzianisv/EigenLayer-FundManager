@@ -8,7 +8,7 @@ import {Test, console2} from "forge-std/Test.sol";
 import "../src/Vault.sol";
 import "./MintableToken.sol";
 import "../src/HoldingsManager.sol";
-import "../src/EigenLayerContracts.sol";
+import "../src/ContractsDirectory.sol";
 import "../src/MyOperator.sol";
 
 contract AssetManagerTest is Test {
@@ -25,7 +25,7 @@ contract AssetManagerTest is Test {
         liquidStakedToken = new MintableToken("Liquid Staked ETH", "lsETH");
         liquidStakedToken.mint(msg.sender, 100);
 
-        IEigenLayerContracts elContracts = new TestContracts(rewardsToken);
+        IContractsDirectory elContracts = new TestContracts(rewardsToken);
         HoldingsManager holdingsManager = new HoldingsManager(address(msg.sender), elContracts);
         vault = new Vault(liquidStakedToken, holdingsManager, elContracts);
     }

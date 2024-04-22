@@ -9,14 +9,14 @@ import "eigenlayer-contracts/src/contracts/core/StrategyManager.sol";
 import "eigenlayer-contracts/src/contracts/interfaces/IDelegationManager.sol";
 import "eigenlayer-contracts/src/contracts/interfaces/IStrategy.sol";
 
-import {IEigenLayerContracts} from "./EigenLayerContracts.sol";
+import "./ContractsDirectory.sol";
 import "./Vault.sol";
 
 contract MyOperator {
     address public operator;
     uint256 public rewardsClaimed;
 
-    IEigenLayerContracts eigenLayerContracts;
+    IContractsDirectory contractsDirectory;
 
     // modifier onlyVault() {
     //     require(msg.sender == address(vault), "Caller is not Vault contract");
@@ -30,25 +30,25 @@ contract MyOperator {
 
     constructor(
         address _operator, 
-        IEigenLayerContracts _eigenLayerContracts
+        IContractsDirectory _contractsDirectory
     ) {
         rewardsClaimed = 0;
         operator = _operator;
-        eigenLayerContracts = _eigenLayerContracts;
+        contractsDirectory = _contractsDirectory;
     }
 
     // TODO: restrict usage to the vault
     function stake(ERC20 token, uint256 amount) external { 
         _depositToEigenLayer(token, amount);
         
-        if (!eigenLayerContracts.delegationManager().isDelegated(address(this))) {
+        if (!contractsDirectory.delegationManager().isDelegated(address(this))) {
             _delegateToEigenLayer();
         }
     }
 
     function _depositToEigenLayer(ERC20 token, uint256 amount) private { 
-        IStrategy strategy = eigenLayerContracts.strategy(token.symbol());
-        IStrategyManager strategyManager = eigenLayerContracts.strategyManager();
+        IStrategy strategy = contractsDirectory.strategy(token.symbol());
+        IStrategyManager strategyManager = contractsDirectory.strategyManager();
         token.transferFrom(msg.sender, address(this), amount);
         token.approve(address(strategyManager), amount); 
         strategyManager.depositIntoStrategy(strategy, token, amount);
@@ -56,7 +56,7 @@ contract MyOperator {
 
     function _delegateToEigenLayer() private {
         ISignatureUtils.SignatureWithExpiry memory emptySig;
-        eigenLayerContracts.delegationManager().delegateTo(operator, emptySig, bytes32(0));
+        contractsDirectory.delegationManager().delegateTo(operator, emptySig, bytes32(0));
     }
 
     // TODO: restrict usage to the vault
@@ -68,8 +68,8 @@ contract MyOperator {
         address withdrawer = address(msg.sender); //TODO: double check if this works
         address staker = address(this);
 
-        IDelegationManager delegationManager = eigenLayerContracts.delegationManager();
-        IStrategy strategy = eigenLayerContracts.strategy(token.symbol());
+        IDelegationManager delegationManager = contractsDirectory.delegationManager();
+        IStrategy strategy = contractsDirectory.strategy(token.symbol());
 
         uint nonce = delegationManager.cumulativeWithdrawalsQueued(staker);
 
@@ -107,8 +107,8 @@ contract MyOperator {
         delegationManager.completeQueuedWithdrawal(withdrawal, tokens, 0, true);
     }
 
-    function getRewards(uint256 deposited) public view returns (uint256) {
-        // (IStrategy[] memory strategies, uint256[] memory shares) = eigenLayerContracts.delegationManager().getDelegatableShares(operator);
+    function getRewards(uint256 /* deposited */) public view returns (uint256) {
+        // (IStrategy[] memory strategies, uint256[] memory shares) = contractsDirectory.delegationManager().getDelegatableShares(operator);
 
         // uint256 amount = 0;
         // for (uint j = 0; j < strategies.length; j++) {
@@ -125,17 +125,17 @@ contract MyOperator {
 
     //TODO: ⚠️ rewards simulation function, has to be removed in production
     function rewardsClaim(address receiver, uint256 amount) public returns (uint256) {
-        eigenLayerContracts.rewardsToken().transfer(receiver, amount);
+        contractsDirectory.rewardsToken().transfer(receiver, amount);
         rewardsClaimed += amount;
         return amount;
     }
 
     //TODO: ⚠️ rewards simulation function, has to be removed in production
     function rewardAvailable() public view returns (uint256) {
-        return eigenLayerContracts.rewardsToken().balanceOf(address(this));
+        return contractsDirectory.rewardsToken().balanceOf(address(this));
     }
 
     function rewardsAsset() public view returns (ERC20) {
-        return eigenLayerContracts.rewardsToken();
+        return contractsDirectory.rewardsToken();
     }
 }

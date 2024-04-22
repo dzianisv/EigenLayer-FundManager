@@ -8,25 +8,28 @@ import "@openzeppelin/contracts/interfaces/IERC4626.sol";
 import {Script, console2} from "forge-std/Script.sol";
 
 import "./AddressLibrary.sol";
-import "./ContractsStore.sol";
+import "./LocalContractsStore.sol";
 
 import "../src/Vault.sol";
 import "../test/MintableToken.sol";
 import "../src/HoldingsManager.sol";
-import "../src/EigenLayerContracts.sol";
+import "../src/ContractsDirectory.sol";
 
-contract AddOperatorScript is Script {
+contract HarvestRewards is Script {
     using AddressLibrary for string;
 
     function setUp() public {}
 
     function run() public {
-        Vault vault = ContractsStore.getVault(vm);
+        Vault vault = LocalContractsStore.getVault(vm);
 
         vm.startBroadcast();
         OperatorInfo[] memory operators = vault.holdingsManager().getOperatorsInfo();
+        address rewardsTokenAddress = address(LocalContractsStore.getContractsDirectory(vm).rewardsToken());
+        console2.log("rewardsToken", rewardsTokenAddress);
+
         for (uint i  = 0; i < operators.length; i++) {
-            MintableToken(address(ContractsStore.getEigenLayerContracts(vm).rewardsToken())).mint(operators[i].staker, 10);
+            MintableToken(rewardsTokenAddress).mint(operators[i].staker, 10);
         }
 
         vault.claimAndReinvest();

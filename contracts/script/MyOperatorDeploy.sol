@@ -8,11 +8,11 @@ import "@openzeppelin/contracts/interfaces/IERC4626.sol";
 import {Script, console2} from "forge-std/Script.sol";
 
 import "./AddressLibrary.sol";
-import "./ContractsStore.sol";
+import "./LocalContractsStore.sol";
 import "../src/Vault.sol";
 import "../test/MintableToken.sol";
 import "../src/HoldingsManager.sol";
-import "../src/EigenLayerContracts.sol";
+import "../src/ContractsDirectory.sol";
 import "../src/MyOperator.sol";
 
 contract DeployTestOperator is Script {
@@ -22,7 +22,7 @@ contract DeployTestOperator is Script {
 
     function run() public {
         vm.startBroadcast();
-        MyOperator mOperator = new MyOperator(ContractsStore.getOperatorAddress(vm), ContractsStore.getEigenLayerContracts(vm));
+        MyOperator mOperator = new MyOperator(LocalContractsStore.getOperatorAddress(vm), LocalContractsStore.getContractsDirectory(vm));
         vm.stopBroadcast();
 
         vm.writeFile('.data/MyOperator.txt', address(mOperator).toHexString());

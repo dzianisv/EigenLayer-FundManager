@@ -8,12 +8,12 @@ import "@openzeppelin/contracts/interfaces/IERC4626.sol";
 import {Script, console2} from "forge-std/Script.sol";
 
 import "./AddressLibrary.sol";
-import "./ContractsStore.sol";
+import "./LocalContractsStore.sol";
 
 import "../src/Vault.sol";
 import "../test/MintableToken.sol";
 import "../src/HoldingsManager.sol";
-import "../src/EigenLayerContracts.sol";
+import "../src/ContractsDirectory.sol";
 
 contract TestDeposit is Script {
     using AddressLibrary for string;
@@ -21,10 +21,10 @@ contract TestDeposit is Script {
     function setUp() public {}
 
     function run() public {
-        Vault vault = ContractsStore.getVault(vm);
+        Vault vault = LocalContractsStore.getVault(vm);
 
         // ETHx
-        ERC20 liquidStakedToken = ContractsStore.getETHxToken(vm);
+        ERC20 liquidStakedToken = LocalContractsStore.getETHxToken(vm);
         uint256 testDeposit = liquidStakedToken.decimals() / 100;
 
         console2.log("pre-msg.sender", msg.sender);

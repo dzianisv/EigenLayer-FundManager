@@ -60,10 +60,17 @@ curl -L https://foundry.paradigm.xyz | bash
 ./bin/run-script --verify script/ExchangeDeploy.sol
 ./bin/run-script --verify script/VaultDeploy.sol
 ```
-4. Harvest rewards & autocompound
+4. Add liqudity to exchange. It transfer RewardsTokens and ETHx to the Exchange liqudity pool. This pool will be used to swap rewards tokens into the liqudity tokens for auto-reinvesting...
+```bash
+./bin/run-script -vvv  ./script/ExchangeAddLiqudity.sol
+```
+
+5. Harvest rewards -> autocompound
 ```bash
 ./bin/run-script ./script/VaultHarvest.sol
 ```
+
+
 
 ### Web
 1. `cd webui && python3 -m http.server`

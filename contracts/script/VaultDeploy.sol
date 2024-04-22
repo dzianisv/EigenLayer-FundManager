@@ -8,12 +8,12 @@ import "@openzeppelin/contracts/interfaces/IERC4626.sol";
 import {Script, console2} from "forge-std/Script.sol";
 
 import "./AddressLibrary.sol";
-import "./ContractsStore.sol";
+import "./LocalContractsStore.sol";
 
 import "../src/Vault.sol";
 import "../test/MintableToken.sol";
 import "../src/HoldingsManager.sol";
-import "../src/EigenLayerContracts.sol";
+import "../src/ContractsDirectory.sol";
 import "../src/MyOperator.sol";
 
 contract DeployVault is Script {
@@ -24,22 +24,22 @@ contract DeployVault is Script {
 
     function run() public {
         // ETHx @ Honesky: https://holesky.etherscan.io/token/
-        ERC20 liquidStakedToken = ContractsStore.getETHxToken(vm);
+        ERC20 liquidStakedToken = LocalContractsStore.getETHxToken(vm);
 
         vm.startBroadcast();
-        IEigenLayerContracts elContracts = new TestnetContracts(
-            ContractsStore.getRewardsToken(vm),
-            ContractsStore.getExchnage(vm)
+        IContractsDirectory contractsDirectory = new TestnetContracts(
+            LocalContractsStore.getRewardsToken(vm),
+            LocalContractsStore.getExchnage(vm)
         );
 
         HoldingsManager holdingsManager = new HoldingsManager(
             address(msg.sender),
-            ContractsStore.getEigenLayerContracts(vm)
+            LocalContractsStore.getContractsDirectory(vm)
         );
         Vault vault = new Vault(
             liquidStakedToken,
             holdingsManager,
-            elContracts
+            contractsDirectory
         );
         // Coinbase Operator: https://holesky.etherscan.io/address/0xbe4b4fa92b6767fda2c8d1db53a286834db19638
         holdingsManager.setOperator(
@@ -59,10 +59,10 @@ contract DeployVault is Script {
 
         vm.stopBroadcast();
 
-        console2.log("ContractsStore address", address(elContracts));
+        console2.log("ContractsDirectory address", address(contractsDirectory));
         vm.writeFile(
-            ".data/IEigenLayerContracts.txt",
-            address(elContracts).toHexString()
+            ".data/ContractsDirectory.txt",
+            address(contractsDirectory).toHexString()
         );
 
         console2.log("Vault address", address(vault));
