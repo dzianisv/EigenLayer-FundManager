@@ -14,6 +14,8 @@ values we can offer
 - 👍 ERC4626 Vault compatible with beffy.com, yearn.fi, and other yielding pools aggregators 
 
 
+[My Medium Post with Findings about EigenLayer](https://medium.com/@dzianisv/blockchain-dev-eigenlayer-erc4626-and-magic-of-auto-compounding-e3016e69dfa4)
+
 ## Demo 
 
 [Live Demo @ Holesky](https://eigenlayerfund.netlify.com)
