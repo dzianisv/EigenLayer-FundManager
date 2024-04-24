@@ -6,13 +6,15 @@
 
 
 values we can offer
-- 👍 stacking to EigenPod, and then delegate to Coinbase Cloud Operators
-- 👍 restacking of liquid-staked ETH to Coinbase Cloud Operators
+- 👍 stacking to EigenPod, and then delegate to EigenLayer Operators
+- 👍 restacking of liquid-staked ETH to EigenLayer Operators
 - 👍 automatic rewards withdrawal in the token of customer choice (USDC)
 - 👍 automatic rewards compounding (reinvesting)
 - 👍 save on gas fees
-- 👍 ERC4626 Vault compatible with beffy.com, yearn.fi, and other yielding pools aggregators 
+- 👍 ERC4626 Vault compatible with [beffy.com](https://beefy.com/), yearn.fi, and other yielding pools aggregators 
 
+
+[My Medium Post with Findings about EigenLayer](https://medium.com/@dzianisv/blockchain-dev-eigenlayer-erc4626-and-magic-of-auto-compounding-e3016e69dfa4)
 
 ## Demo 
 
