@@ -19,7 +19,7 @@ contract AssetManagerTest is Test {
     function setUp() public {
         vm.startPrank(msg.sender);
         
-        rewardsToken = new MintableToken("EigenLayer Rewards Token", "AVS1");
+        rewardsToken = new MintableToken("EigenLayer Rewards Token", "EIGEN");
         rewardsToken.mint(msg.sender, 100);
 
         liquidStakedToken = new MintableToken("Liquid Staked ETH", "lsETH");

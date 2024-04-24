@@ -27,7 +27,7 @@ contract DeployRewardsToken is Script {
         vm.startBroadcast();
         MintableToken token = new MintableToken(
             "EigenLayer Rewards Coin",
-            "AVS1"
+            "EIGEN"
         );
         token.mint(msg.sender, 100);
         vm.stopBroadcast();

@@ -16,6 +16,8 @@ values we can offer
 
 ## Demo 
 
+[![Youtube](docs/Youtube.png)](https://youtu.be/o1mxIY2xa-4?feature=shared)
+
 [Live Demo @ Holesky](https://eigenlayerfund.netlify.com)
 
 ![](docs/demo0.png)
